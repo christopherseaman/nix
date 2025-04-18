@@ -3,6 +3,10 @@
 {
   home.stateVersion = "24.11";
 
+  imports = [
+    ./nix-rebuild.nix
+  ];
+
   # SSH
   programs.ssh = {
     enable = true;
