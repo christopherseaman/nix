@@ -14,7 +14,7 @@
         PUID = toString config.users.users.christopher.uid;
         PGID = toString config.users.groups.users.gid;
         TZ = config.time.timeZone;
-	DOCKER_USER = "${toString config.users.users.christopher.uid}:${toString config.users.groups.users.gid}";
+        # Don't set DOCKER_USER - it's not working correctly
       };
       volumes = [
         "/home/christopher/.code-server/config:/config"
@@ -28,35 +28,34 @@
       ];
       extraOptions = [
         "--network=host"
-        # Removed the "--restart=unless-stopped" option
+        "--user=${toString config.users.users.christopher.uid}:${toString config.users.groups.users.gid}"
       ];
       autoStart = true;
     };
   };
 
-  # You can customize the systemd service if needed
+  # Customize the systemd service
   systemd.services.docker-code-server = {
     serviceConfig = {
-      # These settings override the defaults
       Restart = "always";
       RestartSec = "10s";
     };
   };
 
-  # Rest of your configuration...
+  # Ensure directories exist with proper permissions
   system.activationScripts.mkCodeServerDirs = ''
+    # Create all required directories
     mkdir -p /home/christopher/.code-server/config/data/User
+    mkdir -p /home/christopher/.code-server/config/extensions
     mkdir -p /home/christopher/projects
     
-    # Fix permissions recursively
+    # Fix permissions
     chown -R christopher:users /home/christopher/.code-server
     chmod -R 755 /home/christopher/.code-server
+    chmod -R 775 /home/christopher/.code-server/config/data
+    chmod -R 775 /home/christopher/.code-server/config/extensions
     
-    # Ensure the settings directory is writable
-    chmod 777 /home/christopher/.code-server/config/data/User
-    
-    # Set sticky bit to maintain ownership on new files
-    chmod g+s /home/christopher/projects
+    echo "Code-server directories prepared with permissions"
   '';
 
   environment.variables = {
