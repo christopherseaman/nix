@@ -14,7 +14,7 @@
         PUID = toString config.users.users.christopher.uid;
         PGID = toString config.users.groups.users.gid;
         TZ = config.time.timeZone;
-        # Don't set DOCKER_USER - it's not working correctly
+        # Remove DOCKER_USER
       };
       volumes = [
         "/home/christopher/.code-server/config:/config"
@@ -28,34 +28,25 @@
       ];
       extraOptions = [
         "--network=host"
-        "--user=${toString config.users.users.christopher.uid}:${toString config.users.groups.users.gid}"
+        # Remove user option - rely on linuxserver init script
       ];
       autoStart = true;
     };
   };
 
-  # Customize the systemd service
-  systemd.services.docker-code-server = {
-    serviceConfig = {
-      Restart = "always";
-      RestartSec = "10s";
-    };
-  };
-
-  # Ensure directories exist with proper permissions
+  # Make the needed directories more permissive
   system.activationScripts.mkCodeServerDirs = ''
     # Create all required directories
     mkdir -p /home/christopher/.code-server/config/data/User
     mkdir -p /home/christopher/.code-server/config/extensions
     mkdir -p /home/christopher/projects
     
-    # Fix permissions
+    # Make directories widely accessible
     chown -R christopher:users /home/christopher/.code-server
-    chmod -R 755 /home/christopher/.code-server
-    chmod -R 775 /home/christopher/.code-server/config/data
-    chmod -R 775 /home/christopher/.code-server/config/extensions
+    chmod -R 777 /home/christopher/.code-server/config/data
+    chmod -R 777 /home/christopher/.code-server/config/extensions
     
-    echo "Code-server directories prepared with permissions"
+    echo "Code-server directories prepared with full permissions"
   '';
 
   environment.variables = {
