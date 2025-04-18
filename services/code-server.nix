@@ -43,8 +43,7 @@
     
     # Make directories widely accessible
     chown -R christopher:users /home/christopher/.code-server
-    chmod -R 777 /home/christopher/.code-server/config/data
-    chmod -R 777 /home/christopher/.code-server/config/extensions
+    chmod -R 777 /home/christopher/.code-server
     
     echo "Code-server directories prepared with full permissions"
   '';
