@@ -14,6 +14,7 @@
         PUID = toString config.users.users.christopher.uid;
         PGID = toString config.users.groups.users.gid;
         TZ = config.time.timeZone;
+	DOCKER_USER = "${toString config.users.users.christopher.uid}:${toString config.users.groups.users.gid}";
       };
       volumes = [
         "/home/christopher/.code-server/config:/config"
@@ -44,17 +45,20 @@
 
   # Rest of your configuration...
   system.activationScripts.mkCodeServerDirs = ''
-    mkdir -p /home/christopher/.code-server/config
+    mkdir -p /home/christopher/.code-server/config/data/User
     mkdir -p /home/christopher/projects
     
-    # Fix permissions
+    # Fix permissions recursively
     chown -R christopher:users /home/christopher/.code-server
-    chown -R christopher:users /home/christopher/projects
+    chmod -R 755 /home/christopher/.code-server
     
-    # Optional: Set sticky bit to maintain ownership on new files
+    # Ensure the settings directory is writable
+    chmod 777 /home/christopher/.code-server/config/data/User
+    
+    # Set sticky bit to maintain ownership on new files
     chmod g+s /home/christopher/projects
   '';
-  
+
   environment.variables = {
     VSCODE_PROJECTS = "/home/christopher/projects";
   };

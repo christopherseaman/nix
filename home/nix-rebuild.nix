@@ -45,48 +45,48 @@
       
       # Check if there are uncommitted changes
       if [[ -n "$(git status --porcelain)" ]]; then
-        echo "📝 Changes detected, creating temporary commit..."
+        echo "ð Changes detected, creating temporary commit..."
         git add .
         
         # Check if previous commit message was "working..."
         PREV_MSG=$(git log -1 --pretty=%B)
         if [[ "$PREV_MSG" == "working..." ]]; then
-          echo "📝 Amending previous 'working...' commit"
+          echo "ð Amending previous 'working...' commit"
           git commit --amend --no-edit
         else
-          echo "📝 Creating new temporary commit"
+          echo "ð Creating new temporary commit"
           git commit -m "working..."
         fi
       else
-        echo "✅ No changes to commit."
+        echo "â No changes to commit."
       fi
 
-      echo "🔄 Rebuilding NixOS configuration for $HOSTNAME..."
+      echo "ð Rebuilding NixOS configuration for $HOSTNAME..."
 
       # Run the nixos-rebuild command - FIXED: added path before #
       if sudo nixos-rebuild switch --flake "$REPO_PATH#$HOSTNAME"; then
-        echo "✅ NixOS rebuild successful!"
+        echo "â NixOS rebuild successful!"
         
         # Check if the working commit exists (if we made changes)
         if git log -1 --pretty=%B | grep -q "working..."; then
-          echo "📝 Amending commit with success message..."
+          echo "ð Amending commit with success message..."
           
           # Create success commit message with hostname and date
           SUCCESS_MSG="auto-commit: Successful rebuild on $HOSTNAME ($(date '+%Y-%m-%d %H:%M:%S'))"
           git commit --amend -m "$SUCCESS_MSG"
-          echo "✅ Commit amended with message: $SUCCESS_MSG"
+          echo "â Commit amended with message: $SUCCESS_MSG"
         fi
         
         # Push to git remote
-        echo "🚀 Pushing to $REMOTE/$BRANCH..."
+        echo "ð Pushing to $REMOTE/$BRANCH..."
         if git push "$REMOTE" "$BRANCH" --force-with-lease; then
-          echo "🚀 Git push successful!"
+          echo "ð Git push successful!"
         else
-          echo "⚠️ Git push failed. You may need to push manually."
+          echo "â ï¸ Git push failed. You may need to push manually."
           exit 1
         fi
       else
-        echo "❌ NixOS rebuild failed. The temporary commit remains for debugging."
+        echo "â NixOS rebuild failed. The temporary commit remains for debugging."
         exit 1
       fi
     '')
@@ -96,9 +96,9 @@
       set -e
       
       HOSTNAME=$(hostname)
-      echo "🔄 Rebuilding NixOS configuration for $HOSTNAME..."
+      echo "ð Rebuilding NixOS configuration for $HOSTNAME..."
       sudo nixos-rebuild switch --flake "/etc/nixos#$HOSTNAME"
-      echo "✅ NixOS rebuild completed."
+      echo "â NixOS rebuild completed."
     '')
   ];
 }
