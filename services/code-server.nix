@@ -1,4 +1,4 @@
-# code-server.nix for shared dirs with host
+# services/code-server.nix - Revised to avoid conflicts
 { config, pkgs, ... }: {
   # Ensure docker is enabled
   assertions = [{
@@ -6,30 +6,29 @@
     message = "Docker must be enabled for code-server container";
   }];
 
-  # Define the container
+  # Define the container using oci-containers
   virtualisation.oci-containers.containers = {
     code-server = {
       image = "linuxserver/code-server:latest";
       ports = ["127.0.0.1:8443:8443"];
       environment = {
-        PUID = toString config.users.users.christopher.uid;  # Dynamic UID
-        PGID = toString config.users.groups.users.gid;       # Dynamic GID
-        TZ = config.time.timeZone;                           # Use system timezone
+        PUID = toString config.users.users.christopher.uid;
+        PGID = toString config.users.groups.users.gid;
+        TZ = config.time.timeZone;
       };
       volumes = [
         "/home/christopher/.code-server/config:/config"
         "/home/christopher/projects:/home/coder/projects"
-        # Additional useful mounts
-        "/home/christopher/.ssh:/home/coder/.ssh:ro"         # Share SSH keys (read-only)
-        "/home/christopher/.gitconfig:/home/coder/.gitconfig:ro" # Share git config
-        "/etc/nixos:/home/coder/nixos-config:ro"             # Access NixOS config
+        "/home/christopher/.ssh:/home/coder/.ssh:ro"
+        "/home/christopher/.gitconfig:/home/coder/.gitconfig:ro"
+        "/etc/nixos:/home/coder/nixos-config:ro"
       ];
       environmentFiles = [
         "/var/lib/private/secrets.env"
       ];
       extraOptions = [
-        "--network=host"           # Optional: simplifies network access
-        "--restart=unless-stopped" # Restart policy
+        "--network=host"
+        "--restart=unless-stopped"
       ];
       autoStart = true;
     };
@@ -48,17 +47,7 @@
     chmod g+s /home/christopher/projects
   '';
   
-  # Add a convenient environment variable for VS Code
   environment.variables = {
     VSCODE_PROJECTS = "/home/christopher/projects";
   };
-  
-  # Optional: Configure SSH for Git integration
-  services.openssh.enable = true;
-  
-  # Ensure Git is available in the host system
-  environment.systemPackages = with pkgs; [
-    git
-    git-lfs
-  ];
 }
