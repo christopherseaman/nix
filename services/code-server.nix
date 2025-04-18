@@ -1,4 +1,3 @@
-# services/code-server.nix - Revised to avoid conflicts
 { config, pkgs, ... }: {
   # Ensure docker is enabled
   assertions = [{
@@ -28,13 +27,22 @@
       ];
       extraOptions = [
         "--network=host"
-        "--restart=unless-stopped"
+        # Removed the "--restart=unless-stopped" option
       ];
       autoStart = true;
     };
   };
 
-  # Create necessary directories and set permissions
+  # You can customize the systemd service if needed
+  systemd.services.docker-code-server = {
+    serviceConfig = {
+      # These settings override the defaults
+      Restart = "always";
+      RestartSec = "10s";
+    };
+  };
+
+  # Rest of your configuration...
   system.activationScripts.mkCodeServerDirs = ''
     mkdir -p /home/christopher/.code-server/config
     mkdir -p /home/christopher/projects
