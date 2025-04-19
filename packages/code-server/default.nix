@@ -32,6 +32,7 @@ pkgs.stdenv.mkDerivation {
     xorg.libxkbfile
     xorg.libX11
     nodejs
+    coreutils
   ];
 
   # Fix paths and patch ELF binaries
@@ -39,17 +40,27 @@ pkgs.stdenv.mkDerivation {
     mkdir -p $out
     cp -r ./code-server-${version}-${platform}/* $out/
     
-    # Fix the path to Node.js in the code-server script
-    substituteInPlace $out/bin/code-server \
-      --replace '#!/usr/bin/env -S node' '#!${pkgs.nodejs}/bin/node'
+    # Create a wrapper script
+    mv $out/bin/code-server $out/bin/code-server-original
+    cat > $out/bin/code-server << EOF
+    #!${pkgs.bash}/bin/bash
+    export PATH="${pkgs.coreutils}/bin:${pkgs.bash}/bin:${pkgs.nodejs}/bin:\$PATH"
+    exec ${pkgs.nodejs}/bin/node $out/lib/node_modules/code-server/out/node/entry.js "\$@"
+    EOF
     
-    # Make sure the binaries are executable
     chmod +x $out/bin/code-server
     
-    # Wrap the binary to ensure it has access to required runtime libraries
-    wrapProgram $out/bin/code-server \
-      --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.nodejs ]} \
-      --set NODE_PATH $out/lib/node_modules
+    # Make sure all scripts have proper paths
+    for f in $out/bin/* $out/lib/node_modules/code-server/bin/*; do
+      if [ -f "$f" ] && [ -x "$f" ]; then
+        wrapProgram "$f" \
+          --prefix PATH : ${pkgs.lib.makeBinPath [ 
+            pkgs.nodejs 
+            pkgs.coreutils 
+            pkgs.bash
+          ]}
+      fi
+    done || true
   '';
 
   meta = with pkgs.lib; {

@@ -18,6 +18,11 @@ in {
       Type = "simple";
       # Use a simple script to setup and run code-server
       ExecStart = pkgs.writeShellScript "start-code-server" ''
+        #!${pkgs.bash}/bin/bash
+        
+        # Set PATH to include basic utilities
+        export PATH="${pkgs.coreutils}/bin:${pkgs.bash}/bin:${pkgs.nodejs}/bin:$PATH"
+        
         # Create the config directory
         mkdir -p ~/.config/code-server
         
@@ -37,6 +42,7 @@ in {
       '';
       
       # Environment variables
+      Environment = "PATH=${pkgs.coreutils}/bin:${pkgs.bash}/bin:${pkgs.nodejs}/bin:/run/current-system/sw/bin";
       EnvironmentFile = "/var/lib/private/secrets.env";
       
       # Restart settings
