@@ -7,145 +7,67 @@
         PUID = "1000";
         PGID = "100";
         TZ = config.time.timeZone;
-        SUDO_PASSWORD = "def";
         DEFAULT_WORKSPACE = "/config/workspace";
-        SSH_AUTH_SOCK = "/config/ssh-agent.sock";
-        NIX_REMOTE = "daemon";
-        NIX_CONF_DIR = "/etc/nix";
-        HOME = "/config";
-        PATH = "/nix/var/nix/profiles/default/bin:/config/.nix-profile/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
-        # Enable experimental features
-        NIX_CONFIG = "experimental-features = nix-command flakes";
       };
       volumes = [
         "/home/christopher/.code-server:/config"
         "/home/christopher/projects:/config/workspace"
-        "/nix:/nix:ro"
-        "/etc/nix:/etc/nix:ro"
-        "/run/current-system:/run/current-system:ro"
-        "/nix/var/nix/daemon-socket:/nix/var/nix/daemon-socket:ro"
-        "/nix/var/nix/profiles:/nix/var/nix/profiles:ro"
-        "/home/christopher/.nix-profile:/config/.nix-profile:ro"
-        "/run/current-system/sw:/run/current-system/sw:ro"
-        "/etc/resolv.conf:/etc/resolv.conf:ro"
-        "/etc/ssl:/etc/ssl:ro"
-        "/run/user/1000/keyring/ssh:/config/ssh-agent.sock:ro"
-        # Change to read-write access for Git to work with flakes
-        "/etc/nixos:/config/nixos-config"
       ];
       environmentFiles = [
-        "/var/lib/private/secrets.env"
-      ];
-      extraOptions = [
-        "--security-opt=seccomp=unconfined"
+        "/var/lib/private/secrets.env" # Contains PASSWORD=yourpassword
       ];
       autoStart = true;
     };
   };
 
+  # Ensure the basic directories exist and create setup scripts
   system.activationScripts.mkCodeServerDirs = ''
     mkdir -p /home/christopher/.code-server
     mkdir -p /home/christopher/projects
     
-    # Create nix-shell initialization script
-    mkdir -p /home/christopher/.code-server/scripts
-    cat > /home/christopher/.code-server/scripts/nix-init.sh << 'EOF'
+    # Create setup script
+    mkdir -p /home/christopher/.code-server/custom-cont-init.d
+    cat > /home/christopher/.code-server/custom-cont-init.d/99-install-dev-tools.sh << 'EOF'
     #!/bin/bash
     
-    # Source nix environment if available
-    if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
-      source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+    # Skip if already installed
+    if [ -f /config/.dev-tools-installed ]; then
+      echo "Dev tools already installed"
+      exit 0
     fi
     
-    # Source user profile if available
-    if [ -f /config/.nix-profile/etc/profile.d/nix.sh ]; then
-      source /config/.nix-profile/etc/profile.d/nix.sh
-    fi
+    echo "Installing development tools..."
     
-    # Add current-system bins to PATH
-    export PATH="/run/current-system/sw/bin:$PATH"
+    # Update package lists
+    apt-get update
     
-    # Enable experimental features for nix-command and flakes
-    export NIX_CONFIG="experimental-features = nix-command flakes"
+    # Install basic development tools
+    apt-get install -y \
+      git \
+      curl \
+      wget \
+      build-essential \
+      python3 \
+      python3-pip \
+      python3-venv \
+      nodejs \
+      npm \
+      golang
     
-    # Add any special host environment variables here
-    export NIX_PATH=nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos:nixos-config=/etc/nixos/configuration.nix:/nix/var/nix/profiles/per-user/root/channels
+    # Install Python development tools
+    pip3 install black mypy ruff ipython
     
-    # Let the system know we've initialized Nix
-    export NIX_INITIALIZED=1
+    # Install VS Code extensions
+    code-server --install-extension ms-python.python
+    code-server --install-extension golang.go
+    code-server --install-extension ms-vscode.cpptools
+    
+    # Create marker file
+    touch /config/.dev-tools-installed
+    
+    echo "Development tools installed!"
     EOF
-    chmod +x /home/christopher/.code-server/scripts/nix-init.sh
-    
-    # Create helper script for using host development shell
-    cat > /home/christopher/.code-server/scripts/use-host-devshell.sh << 'EOF'
-    #!/bin/bash
-
-    # Change to the directory with the host's flake.nix
-    cd /config/nixos-config
-
-    # Use nix develop to get the host's development shell
-    echo "Entering host development shell..."
-    nix develop
-    EOF
-    chmod +x /home/christopher/.code-server/scripts/use-host-devshell.sh
-    
-    # Create helper script for installing extensions
-    cat > /home/christopher/.code-server/scripts/install-extensions.sh << 'EOF'
-    #!/bin/bash
-    code-server --install-extension jnoortheen.nix-ide
-    code-server --install-extension arrterian.nix-env-selector
-    code-server --install-extension janw4ld.lambda-black
-    echo "Extensions installed! Please restart VS Code Server."
-    EOF
-    chmod +x /home/christopher/.code-server/scripts/install-extensions.sh
-    
-    # Create a custom shell RC file
-    cat > /home/christopher/.code-server/.bashrc << 'EOF'
-    # Initialize Nix environment
-    if [ -f /config/scripts/nix-init.sh ]; then
-        source /config/scripts/nix-init.sh
-    fi
-    
-    # Simple prompt
-    PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \$ '
-    
-    # Aliases
-    alias devshell='cd /config/nixos-config && nix develop'
-    
-    # Print status
-    nix --version 2>/dev/null && echo "✓ Nix is available" || echo "❌ Nix is not available"
-    
-    # Automatically enter development shell on terminal start
-    cd /config/nixos-config && nix develop
-    EOF
-    
-    # Create settings.json
-    mkdir -p /home/christopher/.code-server/data/Machine
-    cat > /home/christopher/.code-server/data/Machine/settings.json << 'EOF'
-    {
-      "workbench.colorTheme": "Lambda Black",
-      "editor.formatOnSave": true,
-      "nix.enableLanguageServer": true,
-      "nix.serverPath": "nil",
-      "terminal.integrated.profiles.linux": {
-        "nix-bash": {
-          "path": "/bin/bash",
-          "args": ["--rcfile", "/config/.bashrc"],
-          "icon": "terminal-bash"
-        }
-      },
-      "terminal.integrated.defaultProfile.linux": "nix-bash"
-    }
-    EOF
-    
-    # Make sure both /etc/nix/nix.conf on host has experimental features enabled
-    if [ -f /etc/nix/nix.conf ] && ! grep -q "experimental-features" /etc/nix/nix.conf; then
-      echo "Adding experimental-features to /etc/nix/nix.conf"
-      echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
-    fi
-    
-    # Make nixos-config directory writable for git operations
-    chmod -R g+w /etc/nixos
+    chmod +x /home/christopher/.code-server/custom-cont-init.d/99-install-dev-tools.sh
     
     # Set proper permissions
     chown -R 1000:100 /home/christopher/.code-server
