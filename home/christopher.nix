@@ -52,5 +52,6 @@
   home.packages = with pkgs; [
     git-lfs  # Optional: Git Large File Storage
     gitAndTools.delta  # Optional: Better diff tool
+    tmux
   ];
 }
