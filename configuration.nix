@@ -151,12 +151,6 @@
   networking.firewall.enable = false;
   
   # Enable user christopher to read secrets.env
-  system.activationScripts.codeServerEnv = ''
-    mkdir -p /home/christopher/.config/code-server
-    cp /var/lib/private/secrets.env /home/christopher/.config/code-server/secrets.env
-    chown christopher:users /home/christopher/.config/code-server/secrets.env
-    chmod 600 /home/christopher/.config/code-server/secrets.env
-  '';
 
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
