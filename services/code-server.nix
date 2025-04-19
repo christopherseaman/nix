@@ -75,6 +75,19 @@
     EOF
     chmod +x /home/christopher/.code-server/scripts/nix-init.sh
     
+    # Create helper script for using host development shell
+    cat > /home/christopher/.code-server/scripts/use-host-devshell.sh << 'EOF'
+    #!/bin/bash
+
+    # Change to the directory with the host's flake.nix
+    cd /config/nixos-config
+
+    # Use nix develop to get the host's development shell
+    echo "Entering host development shell..."
+    nix develop
+    EOF
+    chmod +x /home/christopher/.code-server/scripts/use-host-devshell.sh
+    
     # Create helper script for installing extensions
     cat > /home/christopher/.code-server/scripts/install-extensions.sh << 'EOF'
     #!/bin/bash
@@ -96,12 +109,14 @@
     PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \$ '
     
     # Aliases
-    alias nrs='sudo nixos-rebuild switch'
-    alias nrb='sudo nixos-rebuild boot'
-    alias nrt='sudo nixos-rebuild test'
+    # alias nrs='sudo nixos-rebuild switch'
+    # alias nrb='sudo nixos-rebuild boot'
+    # alias nrt='sudo nixos-rebuild test'
+    alias devshell='/config/scripts/use-host-devshell.sh'
     
     # Print status
-    echo "Nix environment initialized"
+    # echo "Nix environment initialized"
+    # echo "Type 'devshell' to use the host's development shell"
     nix --version 2>/dev/null && echo "✓ Nix is available" || echo "❌ Nix is not available"
     EOF
     
