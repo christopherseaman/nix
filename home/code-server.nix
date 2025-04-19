@@ -3,6 +3,18 @@
 
 let
   code-server-pkg = import ../packages/code-server { inherit pkgs; };
+  
+  # Create a shell script to set up the config
+  setupScript = pkgs.writeShellScript "setup-code-server-config" ''
+    ${pkgs.coreutils}/bin/mkdir -p ~/.config/code-server
+    cat > ~/.config/code-server/config.yaml << EOF
+    bind-addr: 127.0.0.1:8080
+    auth: password
+    password: $PASSWORD
+    cert: false
+    EOF
+    ${pkgs.coreutils}/bin/chmod 600 ~/.config/code-server/config.yaml
+  '';
 in {
   # Add the code-server package
   home.packages = [ code-server-pkg pkgs.coreutils pkgs.bash pkgs.nodejs ];
@@ -16,12 +28,8 @@ in {
     
     Service = {
       Type = "simple";
-      # Use code-server directly, since it now has a proper wrapper script
-      # Use an array for ExecStartPre instead of multiple assignments
-      ExecStartPre = [
-        "${pkgs.bash}/bin/bash -c '${pkgs.coreutils}/bin/mkdir -p ~/.config/code-server && ${pkgs.coreutils}/bin/cat > ~/.config/code-server/config.yaml << EOF\nbind-addr: 127.0.0.1:8080\nauth: password\npassword: $PASSWORD\ncert: false\nEOF\n'"
-        "${pkgs.coreutils}/bin/chmod 600 ~/.config/code-server/config.yaml"
-      ];
+      # Use a script file instead of inline shell commands to avoid quoting issues
+      ExecStartPre = "${setupScript}";
       ExecStart = "${code-server-pkg}/bin/code-server";
       
       # Environment variables - make sure all needed tools are available
