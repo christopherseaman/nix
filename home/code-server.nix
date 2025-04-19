@@ -1,49 +1,57 @@
 { config, lib, pkgs, ... }:
 
 let
-  code-server-version = "4.99.3";
-  code-server-hash = "sha256-nO9nzfvN9Y11LFGm8bqkmzhAuTGN2k8TxfLShGLsvdE=";
+  openvscode-version = "1.98.2";
+  openvscode-hash = "sha256-9NHUbvzNgfb7EfsRyT8/KoNylSWD+15soGsAcu8baKk=";
 
-  # Create a package for the specific code-server version you want
-  code-server-custom = pkgs.stdenv.mkDerivation {
+  # Create package for openvscode-server but call it code-server
+  code-server = pkgs.stdenv.mkDerivation {
     pname = "code-server";
-    version = code-server-version;
+    version = openvscode-version;
     
     src = pkgs.fetchurl {
-      url = "https://github.com/coder/code-server/releases/download/v${code-server-version}/code-server-${code-server-version}-linux-arm64.tar.gz";
-      hash = code-server-hash;
+      url = "https://github.com/gitpod-io/openvscode-server/releases/download/openvscode-server-v${openvscode-version}/openvscode-server-v${openvscode-version}-linux-arm64.tar.gz";
+      hash = openvscode-hash; # Will be prompted during build
     };
     
-    # Add autoPatchelfHook to fix dynamic linking issues
+    # Add patchelf to fix dynamic linking issues
     nativeBuildInputs = [ pkgs.makeWrapper pkgs.autoPatchelfHook ];
     
-    # Add required libraries for dynamic linking
+    # Required libraries for dynamic linking
     buildInputs = with pkgs; [
-      stdenv.cc.cc.lib  # This provides libstdc++
+      stdenv.cc.cc.lib
       zlib
       openssl
       libsecret
+      libkrb5
+      xorg.libxshmfence
       util-linux
       xorg.libxkbfile
       xorg.libX11
+      xorg.libXdamage
+      xorg.libXrandr
+      xorg.libXcomposite
+      xorg.libXext
+      xorg.libXfixes
+      alsa-lib
+      cups
+      mesa
+      expat
       nodejs
       ripgrep
     ];
     
     installPhase = ''
       mkdir -p $out
-      tar -xzf $src -C $out --strip-components=1
+      cp -R ./* $out/
       
-      # Fix the path to node
-      makeWrapper $out/bin/code-server $out/bin/code-server-wrapped \
-        --prefix PATH : ${lib.makeBinPath [ pkgs.nodejs pkgs.ripgrep ]} \
-        --set NODE_PATH $out/lib/node_modules
-      
-      mv $out/bin/code-server-wrapped $out/bin/code-server
+      # Ensure path to node and other tools is correct
+      wrapProgram $out/bin/openvscode-server \
+        --prefix PATH : ${lib.makeBinPath [ pkgs.nodejs pkgs.ripgrep ]}
     '';
   };
 in {
-  # Home Manager user service
+  # Home Manager user service - using the name code-server
   systemd.user.services.code-server = {
     Unit = {
       Description = "VS Code Server";
@@ -51,11 +59,14 @@ in {
     };
     
     Service = {
-      ExecStart = "${code-server-custom}/bin/code-server --host 127.0.0.1 --port 8443 --auth password";
+      # Start the server with common options
+      ExecStart = "${code-server}/bin/openvscode-server --port 8443 --host 127.0.0.1 --connection-token-file ~/.config/code-server/secrets.env";
+      
       Restart = "on-failure";
       RestartSec = 5;
-      # Load password directly from secrets.env
-      EnvironmentFile = "/var/lib/private/secrets.env";
+      
+      # Environment settings
+      Environment = "OPENVSCODE_SERVER_DATA_FOLDER=${config.home.homeDirectory}/.local/share/code-server";
     };
     
     Install = {
@@ -63,19 +74,11 @@ in {
     };
   };
   
-  # Add code-server to user packages
+  # Add openvscode-server to user packages (as code-server)
   home.packages = [
-    code-server-custom
-    
-    # Helper script for Nix extensions
-    (pkgs.writeShellScriptBin "install-code-server-nix-extensions" ''
-      ${code-server-custom}/bin/code-server --install-extension jnoortheen.nix-ide
-      ${code-server-custom}/bin/code-server --install-extension arrterian.nix-env-selector
-      echo "Nix extensions installed! Please restart VS Code Server."
-    '')
+    code-server
   ];
 
-  # Create necessary directories
-  home.file.".config/code-server/.keep".text = "";
-  home.file.".local/share/code-server/extensions/.keep".text = "";
+  # Create necessary directory for data storage
+  home.file.".local/share/code-server/.keep".text = "";
 }
