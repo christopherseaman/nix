@@ -18,7 +18,7 @@
         SSH_AUTH_SOCK = "/config/ssh-agent.sock";
         
         # Default workspace
-        DEFAULT_WORKSPACE = "/config/workspace";  # <- Fixed missing semicolon
+        DEFAULT_WORKSPACE = "/config/workspace";
       };
       volumes = [
         # Config and project data
@@ -32,9 +32,10 @@
         "/nix/var/nix/daemon-socket:/nix/var/nix/daemon-socket:ro"
         "/nix/var/nix/profiles:/nix/var/nix/profiles:ro"
         
-        # System access for user resolution
-        "/etc/passwd:/etc/passwd:ro"
-        "/etc/group:/etc/group:ro"
+        # Don't mount /etc/passwd and /etc/group since they're causing issues
+        # "/etc/passwd:/etc/passwd:ro"
+        # "/etc/group:/etc/group:ro"
+        
         "/etc/resolv.conf:/etc/resolv.conf:ro"
         "/etc/ssl:/etc/ssl:ro"
         
@@ -50,14 +51,22 @@
       extraOptions = [
         "--security-opt=seccomp=unconfined"
       ];
+      # Add hostname here to avoid host resolution issues
+      hostname = "code-server";
       autoStart = true;
     };
   };
 
-  # Setup directories
+  # Setup directories and create etc-passwd file
   system.activationScripts.mkCodeServerDirs = ''
     mkdir -p /home/christopher/.code-server
     mkdir -p /home/christopher/projects
+    
+    # Create custom passwd and group files for the container
+    echo "abc:x:1000:100:abc:/config:/bin/bash" > /home/christopher/.code-server/passwd
+    echo "users:x:100:abc" > /home/christopher/.code-server/group
+    echo "abc:x:100:" >> /home/christopher/.code-server/group
+    chmod 644 /home/christopher/.code-server/passwd /home/christopher/.code-server/group
     
     # Create script to copy SSH keys (safer than mounting directly)
     mkdir -p /home/christopher/.code-server/keys
