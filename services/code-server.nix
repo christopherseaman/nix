@@ -18,7 +18,7 @@
       };
       volumes = [
         "/home/christopher/.code-server/config:/config"
-        "/home/christopher/projects:/home/coder/projects"
+        "/home/christopher/projects:/projects"
         "/home/christopher/.ssh:/home/coder/.ssh:ro"
         "/home/christopher/.gitconfig:/home/coder/.gitconfig:ro"
         "/etc/nixos:/home/coder/nixos-config:ro"
@@ -49,6 +49,7 @@
   '';
 
   environment.variables = {
+    DEFAULT_WORKSPACE = "/projects";
     VSCODE_PROJECTS = "/home/christopher/projects";
   };
 }
