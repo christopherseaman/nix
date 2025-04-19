@@ -28,10 +28,10 @@
         modules = [
           ./configuration.nix
           ./services/caddy.nix
-          ./services/docker.nix
+          # ./services/docker.nix
 	  ./services/duckdns.nix
           # ./services/gitpod.nix
-	  ./services/code-server.nix
+	  # ./services/code-server.nix
           ./services/pbcopy.nix
 	  ./services/tailscale.nix
 

@@ -5,6 +5,7 @@
 
   imports = [
     ./nix-rebuild.nix
+    ./code-server.nix
   ];
 
   # SSH
