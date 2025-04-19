@@ -1,46 +1,35 @@
 { config, pkgs, ... }: {
   virtualisation.oci-containers.containers = {
-    gitpod = {
-      # Use the specific image tag rather than latest
-      image = "gitpod/openvscode-server:1.85.0";
-      
-      # Use regular port mapping without host network
+    openvscode = {
+      image = "ghcr.io/linuxserver/openvscode-server:latest";
       ports = ["127.0.0.1:3000:3000"];
-      
       environment = {
-        # Correct environment variables for this container
-        HOME = "/home/openvscode-server";
-        USER = "openvscode-server";
-        OPENVSCODE_SERVER_PORT = "3000";
+        PUID = toString config.users.users.christopher.uid;
+        PGID = toString config.users.groups.users.gid;
+        TZ = config.time.timeZone;
         
-        # Auth settings
-        OPENVSCODE_SERVER_AUTH = "token";
+        # Authentication settings
+        PASSWORD_FILE = "/config/.password";
         
-        # User settings - remove PUID/PGID as they're not supported
-        # in this container (it's not a LinuxServer.io container)
+        # Development environment
+        DEFAULT_WORKSPACE = "/projects";
       };
-      
       volumes = [
-        # Project and configuration data
-        "/home/christopher/projects:/home/workspace/projects"
-        "/home/christopher/.gitpod:/home/openvscode-server/data"
-        
-        # Nix integration
+        "/home/christopher/.openvscode:/config"
+        "/home/christopher/projects:/projects"
         "/nix:/nix:ro"
         "/etc/nix:/etc/nix:ro"
         "/run/current-system:/run/current-system:ro"
-        
-        # SSH and Git configuration
-        "/home/christopher/.ssh:/home/openvscode-server/.ssh:ro"
-        "/home/christopher/.gitconfig:/home/openvscode-server/.gitconfig:ro"
-        "/etc/nixos:/home/workspace/nixos-config:ro"
+        "/home/christopher/.ssh:/config/.ssh:ro"
+        "/home/christopher/.gitconfig:/config/.gitconfig:ro"
+        "/etc/nixos:/config/nixos-config:ro"
       ];
-      
-      # Remove host network mode as it's causing issues
+      environmentFiles = [
+        "/var/lib/private/secrets.env"
+      ];
       extraOptions = [
         "--security-opt=seccomp=unconfined"
       ];
-      
       autoStart = true;
     };
   };
@@ -48,17 +37,24 @@
   # Make sure Docker is enabled
   assertions = [{
     assertion = config.virtualisation.docker.enable;
-    message = "Docker must be enabled for Gitpod container";
+    message = "Docker must be enabled for OpenVSCode Server container";
   }];
 
-  # Setup directories
-  system.activationScripts.mkGitpodDirs = ''
-    mkdir -p /home/christopher/.gitpod/extensions
-    mkdir -p /home/christopher/.gitpod/data
+  # Setup directories and create password file from secrets
+  system.activationScripts.mkOpenVSCodeDirs = ''
+    mkdir -p /home/christopher/.openvscode
     mkdir -p /home/christopher/projects
-    chown -R christopher:users /home/christopher/.gitpod
-    chmod -R 755 /home/christopher/.gitpod
+    
+    # Create password file from CODESERVER_PASSWORD in secrets.env
+    if [ -f /var/lib/private/secrets.env ]; then
+      PASSWORD=$(grep "CODESERVER_PASSWORD" /var/lib/private/secrets.env | cut -d'=' -f2)
+      echo "$PASSWORD" > /home/christopher/.openvscode/.password
+      chmod 600 /home/christopher/.openvscode/.password
+    fi
+    
+    # Set proper permissions
+    chown -R christopher:users /home/christopher/.openvscode
     chown christopher:users /home/christopher/projects
-    echo "Gitpod directories prepared with permissions"
+    echo "OpenVSCode Server directories prepared"
   '';
 }
