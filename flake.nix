@@ -30,8 +30,8 @@
           ./services/caddy.nix
           ./services/docker.nix
 	  ./services/duckdns.nix
-          ./services/gitpod.nix
-	  # ./services/code-server.nix
+          # ./services/gitpod.nix
+	  ./services/code-server.nix
           ./services/pbcopy.nix
 	  ./services/tailscale.nix
 
