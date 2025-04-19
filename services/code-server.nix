@@ -43,7 +43,7 @@
     
     # Make directories widely accessible
     chown -R christopher:users /home/christopher/.code-server
-    chmod -R 777 /home/christopher/.code-server
+    # chmod -R 777 /home/christopher/.code-server # hopefully not needed with PUID/PGID
     
     echo "Code-server directories prepared with full permissions"
   '';
@@ -53,4 +53,5 @@
     VSCODE_PROJECTS = "/home/christopher/projects";
   };
 }
+
 
