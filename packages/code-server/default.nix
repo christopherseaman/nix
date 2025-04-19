@@ -37,30 +37,70 @@ pkgs.stdenv.mkDerivation {
 
   # Fix paths and patch ELF binaries
   installPhase = ''
+    # First, examine the structure
+    echo "Contents of current directory:"
+    ls -la
+    echo "Contents of code-server directory:"
+    ls -la code-server-${version}-${platform}
+
+    # Create output directory
     mkdir -p $out
-    cp -r ./code-server-${version}-${platform}/* $out/
     
-    # Create a wrapper script
-    mv $out/bin/code-server $out/bin/code-server-original
+    # Copy all files from the tarball as-is
+    cp -r code-server-${version}-${platform}/* $out/
+    
+    # Look for the code-server executable or entry point
+    echo "Looking for executables:"
+    find $out -type f -executable | sort || echo "No executables found"
+    echo "Looking for Node.js entry points:"
+    find $out -name "*.js" | grep -i entry || echo "No entry.js found"
+    
+    # Create bin directory if it doesn't exist
+    mkdir -p $out/bin
+    
+    # Create a wrapper script based on the structure we find
+    if [ -f "$out/bin/code-server" ]; then
+      echo "Found original code-server in bin, wrapping it..."
+      mv $out/bin/code-server $out/bin/code-server-original
+    elif [ -f "$out/code-server" ]; then
+      echo "Found code-server in root, moving to bin..."
+      mv $out/code-server $out/bin/code-server-original
+    fi
+    
+    # Find an appropriate entry point
+    ENTRY_POINT=""
+    if [ -f "$out/out/node/entry.js" ]; then
+      ENTRY_POINT="$out/out/node/entry.js"
+    elif [ -f "$out/lib/node_modules/code-server/out/node/entry.js" ]; then
+      ENTRY_POINT="$out/lib/node_modules/code-server/out/node/entry.js"
+    else
+      # Search for any entry.js file
+      ENTRY_POINT=$(find $out -name "entry.js" | head -1 || echo "")
+    fi
+    
+    # Create the wrapper script
+    echo "Creating wrapper script with entry point: $ENTRY_POINT"
     cat > $out/bin/code-server << EOF
-    #!${pkgs.bash}/bin/bash
+    #!/bin/sh
+    
+    # Set PATH to ensure all needed tools are available
     export PATH="${pkgs.coreutils}/bin:${pkgs.bash}/bin:${pkgs.nodejs}/bin:\$PATH"
-    exec ${pkgs.nodejs}/bin/node $out/lib/node_modules/code-server/out/node/entry.js "\$@"
+    
+    if [ -f "$out/bin/code-server-original" ]; then
+      # Use the original binary if available
+      exec $out/bin/code-server-original "\$@"
+    elif [ -n "$ENTRY_POINT" ]; then
+      # Use node to run the entry point
+      exec ${pkgs.nodejs}/bin/node "$ENTRY_POINT" "\$@"
+    else
+      echo "Error: Could not find code-server executable or entry point."
+      echo "Available files:"
+      find $out -type f -name "code-server*" || echo "No code-server files found"
+      exit 1
+    fi
     EOF
     
     chmod +x $out/bin/code-server
-    
-    # Make sure all scripts have proper paths
-    for f in $out/bin/* $out/lib/node_modules/code-server/bin/*; do
-      if [ -f "$f" ] && [ -x "$f" ]; then
-        wrapProgram "$f" \
-          --prefix PATH : ${pkgs.lib.makeBinPath [ 
-            pkgs.nodejs 
-            pkgs.coreutils 
-            pkgs.bash
-          ]}
-      fi
-    done || true
   '';
 
   meta = with pkgs.lib; {
