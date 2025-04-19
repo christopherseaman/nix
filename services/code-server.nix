@@ -11,8 +11,8 @@
       image = "linuxserver/code-server:latest";
       ports = ["127.0.0.1:8443:8443"];
       environment = {
-        PUID = toString config.users.users.christopher.uid;
-        PGID = toString config.users.groups.users.gid;
+        PUID = "1000";
+        PGID = "100";
         TZ = config.time.timeZone;
         # Remove DOCKER_USER
       };
@@ -53,3 +53,4 @@
     VSCODE_PROJECTS = "/home/christopher/projects";
   };
 }
+
