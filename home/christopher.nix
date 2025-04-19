@@ -1,11 +1,17 @@
+# /etc/nixos/home/christopher.nix
 { config, pkgs, ... }:
 
 {
   home.stateVersion = "24.11";
 
   imports = [
+    ./pbcopy.nix
+    ./code-server.nix  # This now imports the properly configured code-server module
     ./nix-rebuild.nix
   ];
+
+  # Enable pbcopy
+  pbcopy.enable = true;
 
   # SSH
   programs.ssh = {

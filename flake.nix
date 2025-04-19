@@ -1,5 +1,5 @@
 {
-  description = "A simple NixOS flake";
+  description = "BadMath NixOS flake";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
@@ -9,50 +9,71 @@
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-  
+
+    # Import code-server source directly
+    code-server-src = {
+      url = "github:coder/code-server";
+      flake = false;
+    };
+
     # Useful for flake utilities
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  # Add home-manager to the function parameters
-  outputs = { self, nixpkgs, home-manager, flake-utils, ... }@inputs: 
+  # Add inputs to the function parameters
+  outputs = { self, nixpkgs, home-manager, code-server-src, flake-utils, ... }@inputs: 
     let 
-      # Define supported systems
-      supportedSystems = [ "aarch64-linux" "x86_64-linux" ];
+      # Your system architecture - make sure this is correct
+      system = "aarch64-linux";
+      
+      # Define pkgs for your system
+      pkgs = nixpkgs.legacyPackages.${system};
+      
+      # Build the code-server package using the module
+      code-server-pkg = import ./packages/code-server {
+        inherit pkgs code-server-src;
+      };
     in
     {
       # NixOS configuration
       nixosConfigurations.carnac = nixpkgs.lib.nixosSystem {
-        system = "aarch64-linux";
+        inherit system;
+        
+        # Pass special arguments to modules
+        specialArgs = { 
+          inherit code-server-pkg; 
+        };
         
         modules = [
           ./configuration.nix
           ./services/caddy.nix
-          ./services/docker.nix
-	  ./services/duckdns.nix
-          # ./services/gitpod.nix
-	  ./services/code-server.nix
-          ./services/pbcopy.nix
-	  ./services/tailscale.nix
+          ./services/duckdns.nix
+          ./services/tailscale.nix
 
-          { services.pbcopy.enable = true; }
+          # Disabled in favor of home-manager approach
+          # ./services/docker.nix
+          # ./services/gitpod.nix
+          # ./services/code-server.nix
 
           # Add Home Manager as a NixOS module
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
+            # Pass the code-server-pkg to home-manager modules
+            home-manager.extraSpecialArgs = { 
+              inherit code-server-pkg; 
+            };
             home-manager.users.christopher = import ./home/christopher.nix;
           }
         ];
       };
-    } // flake-utils.lib.eachSystem supportedSystems (system:
-      let
-        pkgs = nixpkgs.legacyPackages.${system};
-      in
-      {
-        # Development shell
-        devShells.default = import ./devshells/default.nix { inherit pkgs; };
-      }
-    );
+      
+      # Add devShells using flake-utils
+      devShells = flake-utils.lib.eachDefaultSystem (system: {
+        default = import ./devshells/default.nix { 
+          pkgs = nixpkgs.legacyPackages.${system}; 
+        };
+      });
+    };
 }
