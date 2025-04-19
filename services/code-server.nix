@@ -30,7 +30,8 @@
         "/etc/resolv.conf:/etc/resolv.conf:ro"
         "/etc/ssl:/etc/ssl:ro"
         "/run/user/1000/keyring/ssh:/config/ssh-agent.sock:ro"
-        "/etc/nixos:/config/nixos-config:ro"
+        # Change to read-write access for Git to work with flakes
+        "/etc/nixos:/config/nixos-config"
       ];
       environmentFiles = [
         "/var/lib/private/secrets.env"
@@ -109,15 +110,13 @@
     PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \$ '
     
     # Aliases
-    # alias nrs='sudo nixos-rebuild switch'
-    # alias nrb='sudo nixos-rebuild boot'
-    # alias nrt='sudo nixos-rebuild test'
-    alias devshell='/config/scripts/use-host-devshell.sh'
+    alias devshell='cd /config/nixos-config && nix develop'
     
     # Print status
-    # echo "Nix environment initialized"
-    # echo "Type 'devshell' to use the host's development shell"
     nix --version 2>/dev/null && echo "✓ Nix is available" || echo "❌ Nix is not available"
+    
+    # Automatically enter development shell on terminal start
+    cd /config/nixos-config && nix develop
     EOF
     
     # Create settings.json
@@ -144,6 +143,9 @@
       echo "Adding experimental-features to /etc/nix/nix.conf"
       echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
     fi
+    
+    # Make nixos-config directory writable for git operations
+    chmod -R g+w /etc/nixos
     
     # Set proper permissions
     chown -R 1000:100 /home/christopher/.code-server
