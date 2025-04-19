@@ -2,7 +2,7 @@
   virtualisation.oci-containers.containers = {
     code-server = {
       image = "linuxserver/code-server:latest";
-      ports = ["127.0.0.1:3000:8443"];  # Map to 3000 on host, 8443 in container
+      ports = ["127.0.0.1:8443:8443"];  # Map to 3000 on host, 8443 in container
       environment = {
         # Hardcoded UIDs to match your system
         PUID = "1000";
