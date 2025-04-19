@@ -10,14 +10,12 @@
         SUDO_PASSWORD = "def";
         DEFAULT_WORKSPACE = "/config/workspace";
         SSH_AUTH_SOCK = "/config/ssh-agent.sock";
-        # Set NIX_REMOTE to use the host daemon
         NIX_REMOTE = "daemon";
-        # Make Nix commands work inside the container
         NIX_CONF_DIR = "/etc/nix";
-        # Home directory inside container
         HOME = "/config";
-        # Add HOME/.nix-profile/bin to PATH
         PATH = "/nix/var/nix/profiles/default/bin:/config/.nix-profile/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
+        # Enable experimental features
+        NIX_CONFIG = "experimental-features = nix-command flakes";
       };
       volumes = [
         "/home/christopher/.code-server:/config"
@@ -27,12 +25,8 @@
         "/run/current-system:/run/current-system:ro"
         "/nix/var/nix/daemon-socket:/nix/var/nix/daemon-socket:ro"
         "/nix/var/nix/profiles:/nix/var/nix/profiles:ro"
-        # Add host user's profile
         "/home/christopher/.nix-profile:/config/.nix-profile:ro"
-        # Add system and shell profiles
         "/run/current-system/sw:/run/current-system/sw:ro"
-        "/etc/bashrc:/etc/bashrc:ro"
-        "/etc/profile.d:/etc/profile.d:ro"
         "/etc/resolv.conf:/etc/resolv.conf:ro"
         "/etc/ssl:/etc/ssl:ro"
         "/run/user/1000/keyring/ssh:/config/ssh-agent.sock:ro"
@@ -48,7 +42,6 @@
     };
   };
 
-  # Setup directories
   system.activationScripts.mkCodeServerDirs = ''
     mkdir -p /home/christopher/.code-server
     mkdir -p /home/christopher/projects
@@ -71,6 +64,9 @@
     # Add current-system bins to PATH
     export PATH="/run/current-system/sw/bin:$PATH"
     
+    # Enable experimental features for nix-command and flakes
+    export NIX_CONFIG="experimental-features = nix-command flakes"
+    
     # Add any special host environment variables here
     export NIX_PATH=nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos:nixos-config=/etc/nixos/configuration.nix:/nix/var/nix/profiles/per-user/root/channels
     
@@ -79,46 +75,37 @@
     EOF
     chmod +x /home/christopher/.code-server/scripts/nix-init.sh
     
-    # Create helper script for installing Nix extensions
-    cat > /home/christopher/.code-server/scripts/install-nix-extensions.sh << 'EOF'
+    # Create helper script for installing extensions
+    cat > /home/christopher/.code-server/scripts/install-extensions.sh << 'EOF'
     #!/bin/bash
     code-server --install-extension jnoortheen.nix-ide
     code-server --install-extension arrterian.nix-env-selector
     code-server --install-extension janw4ld.lambda-black
-    echo "Nix extensions and Lambda Black theme installed! Please restart VS Code Server."
+    echo "Extensions installed! Please restart VS Code Server."
     EOF
-    chmod +x /home/christopher/.code-server/scripts/install-nix-extensions.sh
+    chmod +x /home/christopher/.code-server/scripts/install-extensions.sh
     
-    # Create a custom shell RC file to initialize Nix in terminals
+    # Create a custom shell RC file
     cat > /home/christopher/.code-server/.bashrc << 'EOF'
-    # Source global definitions
-    if [ -f /etc/bashrc ]; then
-        . /etc/bashrc
-    fi
-    
     # Initialize Nix environment
     if [ -f /config/scripts/nix-init.sh ]; then
         source /config/scripts/nix-init.sh
     fi
     
-    # Set up a simple prompt without __git_ps1 dependency
+    # Simple prompt
     PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \$ '
     
-    # User specific aliases and functions
+    # Aliases
     alias nrs='sudo nixos-rebuild switch'
     alias nrb='sudo nixos-rebuild boot'
     alias nrt='sudo nixos-rebuild test'
     
-    # Print environment status
-    echo "Nix host environment initialized"
-    echo "PATH: $PATH"
-    
-    # Try to execute nix command to check if it's available
+    # Print status
+    echo "Nix environment initialized"
     nix --version 2>/dev/null && echo "✓ Nix is available" || echo "❌ Nix is not available"
-    python3 --version 2>/dev/null && echo "✓ Python is available" || echo "❌ Python is not available"
     EOF
     
-    # Create a settings.json with terminal profile and Lambda Black theme
+    # Create settings.json
     mkdir -p /home/christopher/.code-server/data/Machine
     cat > /home/christopher/.code-server/data/Machine/settings.json << 'EOF'
     {
@@ -126,13 +113,6 @@
       "editor.formatOnSave": true,
       "nix.enableLanguageServer": true,
       "nix.serverPath": "nil",
-      "nix.serverSettings": {
-        "nil": {
-          "formatting": {
-            "command": ["nixpkgs-fmt"]
-          }
-        }
-      },
       "terminal.integrated.profiles.linux": {
         "nix-bash": {
           "path": "/bin/bash",
@@ -143,6 +123,12 @@
       "terminal.integrated.defaultProfile.linux": "nix-bash"
     }
     EOF
+    
+    # Make sure both /etc/nix/nix.conf on host has experimental features enabled
+    if [ -f /etc/nix/nix.conf ] && ! grep -q "experimental-features" /etc/nix/nix.conf; then
+      echo "Adding experimental-features to /etc/nix/nix.conf"
+      echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
+    fi
     
     # Set proper permissions
     chown -R 1000:100 /home/christopher/.code-server
