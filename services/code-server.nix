@@ -9,7 +9,7 @@
         TZ = config.time.timeZone;
         DEFAULT_WORKSPACE = "/config/workspace";
         # Add fish to the mods
-        DOCKER_MODS = "linuxserver/mods:code-server-python3|linuxserver/mods:code-server-golang|linuxserver/mods:code-server-nvm|linuxserver/mods:code-server-rust|linuxserver/mods:universal-fish";
+        DOCKER_MODS = "linuxserver/mods:code-server-python3|linuxserver/mods:code-server-golang|linuxserver/mods:code-server-nvm|linuxserver/mods:code-server-rust";
       };
       volumes = [
         "/home/christopher/.code-server:/config"
