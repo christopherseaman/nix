@@ -14,7 +14,21 @@ let
       hash = code-server-hash;
     };
     
-    nativeBuildInputs = [ pkgs.makeWrapper ];
+    # Add autoPatchelfHook to fix dynamic linking issues
+    nativeBuildInputs = [ pkgs.makeWrapper pkgs.autoPatchelfHook ];
+    
+    # Add required libraries for dynamic linking
+    buildInputs = with pkgs; [
+      stdenv.cc.cc.lib  # This provides libstdc++
+      zlib
+      openssl
+      libsecret
+      util-linux
+      xorg.libxkbfile
+      xorg.libX11
+      nodejs
+      ripgrep
+    ];
     
     installPhase = ''
       mkdir -p $out
@@ -40,7 +54,7 @@ in {
       ExecStart = "${code-server-custom}/bin/code-server --host 127.0.0.1 --port 8443 --auth password";
       Restart = "on-failure";
       RestartSec = 5;
-      # Load password directly from secrets.env if accessible to your user
+      # Load password directly from secrets.env
       EnvironmentFile = "/var/lib/private/secrets.env";
     };
     
