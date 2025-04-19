@@ -8,8 +8,8 @@
         PGID = "100";
         TZ = config.time.timeZone;
         DEFAULT_WORKSPACE = "/config/workspace";
-        # Add the mods you want
-        DOCKER_MODS = "linuxserver/mods:code-server-python3|linuxserver/mods:code-server-golang|linuxserver/mods:code-server-nvm|linuxserver/mods:code-server-rust";
+        # Add fish to the mods
+        DOCKER_MODS = "linuxserver/mods:code-server-python3|linuxserver/mods:code-server-golang|linuxserver/mods:code-server-nvm|linuxserver/mods:code-server-rust|linuxserver/mods:universal-fish";
       };
       volumes = [
         "/home/christopher/.code-server:/config"
@@ -26,6 +26,19 @@
   system.activationScripts.mkCodeServerDirs = ''
     mkdir -p /home/christopher/.code-server
     mkdir -p /home/christopher/projects
+    
+    # Configure VS Code to use Fish
+    mkdir -p /home/christopher/.code-server/data/Machine
+    cat > /home/christopher/.code-server/data/Machine/settings.json << 'EOF'
+    {
+      "terminal.integrated.defaultProfile.linux": "fish",
+      "terminal.integrated.profiles.linux": {
+        "fish": {
+	  "path": "/usr/bin/fish"
+         }
+      }
+    }
+    EOF
     
     # Set proper permissions
     chown -R 1000:100 /home/christopher/.code-server
