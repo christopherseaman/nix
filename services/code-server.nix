@@ -14,7 +14,7 @@
         PUID = "1000";
         PGID = "100";
         TZ = config.time.timeZone;
-        # Remove DOCKER_USER
+	SUDO_PASSWORD = "def";
       };
       volumes = [
         "/home/christopher/.code-server/config:/config"
