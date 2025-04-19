@@ -1,4 +1,3 @@
-# /etc/nixos/home/code-server.nix
 { config, pkgs, code-server-pkg, ... }:
 
 {
@@ -12,17 +11,8 @@
       After = [ "network.target" ];
     };
     Service = {
-      # Generate the config file just before starting
-      ExecStartPre = ''
-        ${pkgs.writeShellScript "generate-code-server-config" ''
-          mkdir -p ~/.config/code-server
-          echo "bind-addr: 127.0.0.1:8080
-auth: password
-password: $PASSWORD
-cert: false" > ~/.config/code-server/config.yaml
-          chmod 600 ~/.config/code-server/config.yaml
-        ''}
-      '';
+      # Generate the config file directly
+      ExecStartPre = "${pkgs.bash}/bin/bash -c 'mkdir -p ~/.config/code-server && echo \"bind-addr: 127.0.0.1:8080\nauth: password\npassword: $PASSWORD\ncert: false\" > ~/.config/code-server/config.yaml && chmod 600 ~/.config/code-server/config.yaml'";
       ExecStart = "${code-server-pkg}/bin/code-server";
       Restart = "always";
       EnvironmentFile = "/var/lib/private/secrets.env";
