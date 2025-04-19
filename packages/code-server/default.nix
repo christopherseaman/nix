@@ -1,100 +1,56 @@
 # /etc/nixos/packages/code-server/default.nix
-{ pkgs, code-server-src }:
+{ pkgs }:
 
 let
-  nodejs = pkgs.nodejs_20;
-  typescript = pkgs.nodePackages.typescript;
-
-  buildInputs = with pkgs; [
-    python3 pkg-config git openssl
-    libsecret libkrb5 xorg.libX11 xorg.libxkbfile
-    gcc gnumake typescript
-  ];
-in pkgs.buildNpmPackage {
+  version = "4.99.3";
+  platform = "linux-arm64";
+  hash = "sha256-nO9nzfvN9Y11LFGm8bqkmzhAuTGN2k8TxfLShGLsvdE=";
+in
+pkgs.stdenv.mkDerivation {
   pname = "code-server";
-  version = code-server-src.shortRev or "git";
+  inherit version;
 
-  src = code-server-src;
-  npmDepsHash = "sha256-xgL4Uh0jUlEIIVU0V0Hv5G1G/T8l5qL9tzJo3doXTVg=";
+  src = pkgs.fetchurl {
+    url = "https://github.com/coder/code-server/releases/download/v${version}/code-server-${version}-${platform}.tar.gz";
+    sha256 = hash;
+  };
 
-  nodejs = nodejs;
-  npmFlags = [ "--ignore-scripts" ];
-
-  nativeBuildInputs = buildInputs;
+  # Extract the archive first
+  sourceRoot = ".";
   
-  # Fix TypeScript type error
-  postPatch = ''
-    sed -i 's/return raw ? JSON.parse(raw) : {}/return raw ? JSON.parse(raw) : {} as T/' src/node/settings.ts
-  '';
+  # Add runtime dependencies required by the binary
+  nativeBuildInputs = with pkgs; [ 
+    autoPatchelfHook
+    makeWrapper 
+  ];
+  
+  # Libraries needed for code-server to run
+  buildInputs = with pkgs; [
+    stdenv.cc.cc.lib
+    libsecret
+    krb5
+    xorg.libxkbfile
+    xorg.libX11
+    nodejs
+  ];
 
-  buildPhase = ''
-    runHook preBuild
-
-    # Create required symlinks
-    (
-      cd lib/vscode
-      ln -s ../../../node_modules node_modules.asar
-      mkdir -p bin/remote-cli bin/helpers
-    )
-
-    # Rebuild native modules
-    pushd node_modules/argon2
-    npm run install
-    popd
-
-    # Find and rebuild other native modules
-    find node_modules -type f -name "binding.gyp" | while read -r module_path; do
-      module_dir=$(dirname "$module_path")
-      pushd "$module_dir"
-      if [ -f "package.json" ]; then
-        if grep -q '"install"' package.json; then
-          npm run install
-        elif grep -q '"build"' package.json; then
-          npm run build
-        fi
-      fi
-      popd
-    done
-
-    # Compile TypeScript
-    export PATH="${typescript}/bin:$PWD/node_modules/.bin:$PATH"
-    tsc --build tsconfig.json
-
-    # Create release structure
-    mkdir -p release-standalone/bin
-    mkdir -p release-standalone/lib/lib/vscode
-    
-    # Copy required files
-    cp -r out release-standalone/lib/
-    cp -r node_modules release-standalone/lib/
-    cp package.json release-standalone/lib/
-    
-    # Create vscode package.json if needed
-    if [ -f lib/vscode/package.json ]; then
-      cp lib/vscode/package.json release-standalone/lib/lib/vscode/
-    else
-      echo '{"name":"code-server-vscode","version":"1.0.0"}' > release-standalone/lib/lib/vscode/package.json
-    fi
-    
-    # Create launcher script
-    cat > release-standalone/bin/code-server <<EOF
-    #!/usr/bin/env bash
-    cd "\$(dirname "\$(readlink -f "\$0")")/../lib" || exit 1
-    exec ${nodejs}/bin/node out/node/entry.js "\$@"
-    EOF
-    chmod +x release-standalone/bin/code-server
-    
-    runHook postBuild
-  '';
-
+  # Fix paths and patch ELF binaries
   installPhase = ''
-    runHook preInstall
     mkdir -p $out
-    cp -r release-standalone/* $out/
-    runHook postInstall
+    cp -r ./code-server-${version}-${platform}/* $out/
+    
+    # Fix the path to Node.js in the code-server script
+    substituteInPlace $out/bin/code-server \
+      --replace '#!/usr/bin/env -S node' '#!${pkgs.nodejs}/bin/node'
+    
+    # Make sure the binaries are executable
+    chmod +x $out/bin/code-server
+    
+    # Wrap the binary to ensure it has access to required runtime libraries
+    wrapProgram $out/bin/code-server \
+      --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.nodejs ]} \
+      --set NODE_PATH $out/lib/node_modules
   '';
-
-  runtimeDependencies = [ nodejs ];
 
   meta = with pkgs.lib; {
     description = "VS Code in the browser";

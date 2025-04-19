@@ -1,6 +1,9 @@
-{ config, pkgs, code-server-pkg, ... }:
+# /etc/nixos/home/code-server.nix
+{ config, pkgs, ... }:
 
-{
+let
+  code-server-pkg = import ../packages/code-server { inherit pkgs; };
+in {
   # Add the code-server package
   home.packages = [ code-server-pkg ];
   
@@ -34,7 +37,6 @@
       '';
       
       # Environment variables
-      Environment = "PATH=/run/current-system/sw/bin";
       EnvironmentFile = "/var/lib/private/secrets.env";
       
       # Restart settings
