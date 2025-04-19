@@ -17,7 +17,7 @@
         # Home directory inside container
         HOME = "/config";
         # Add HOME/.nix-profile/bin to PATH
-        PATH = "/config/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
+        PATH = "/nix/var/nix/profiles/default/bin:/config/.nix-profile/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
       };
       volumes = [
         "/home/christopher/.code-server:/config"
@@ -29,6 +29,10 @@
         "/nix/var/nix/profiles:/nix/var/nix/profiles:ro"
         # Add host user's profile
         "/home/christopher/.nix-profile:/config/.nix-profile:ro"
+        # Add system and shell profiles
+        "/run/current-system/sw:/run/current-system/sw:ro"
+        "/etc/bashrc:/etc/bashrc:ro"
+        "/etc/profile.d:/etc/profile.d:ro"
         "/etc/resolv.conf:/etc/resolv.conf:ro"
         "/etc/ssl:/etc/ssl:ro"
         "/run/user/1000/keyring/ssh:/config/ssh-agent.sock:ro"
@@ -64,6 +68,9 @@
       source /config/.nix-profile/etc/profile.d/nix.sh
     fi
     
+    # Add current-system bins to PATH
+    export PATH="/run/current-system/sw/bin:$PATH"
+    
     # Add any special host environment variables here
     export NIX_PATH=nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos:nixos-config=/etc/nixos/configuration.nix:/nix/var/nix/profiles/per-user/root/channels
     
@@ -94,13 +101,21 @@
         source /config/scripts/nix-init.sh
     fi
     
+    # Set up a simple prompt without __git_ps1 dependency
+    PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \$ '
+    
     # User specific aliases and functions
     alias nrs='sudo nixos-rebuild switch'
     alias nrb='sudo nixos-rebuild boot'
     alias nrt='sudo nixos-rebuild test'
     
-    # Enable showing git branch in prompt
-    PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]$(__git_ps1 " (%s)") \$ '
+    # Print environment status
+    echo "Nix host environment initialized"
+    echo "PATH: $PATH"
+    
+    # Try to execute nix command to check if it's available
+    nix --version 2>/dev/null && echo "✓ Nix is available" || echo "❌ Nix is not available"
+    python3 --version 2>/dev/null && echo "✓ Python is available" || echo "❌ Python is not available"
     EOF
     
     # Create a settings.json with terminal profile and Lambda Black theme
