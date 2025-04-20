@@ -18,10 +18,10 @@ let
         python311Packages.virtualenv
         
         # Development tools
-        python311Packages.black
-        python311Packages.ruff
+        uv
+	ruff
+	python311Packages.black
         python311Packages.mypy
-        python311Packages.uv
         python311Packages.ipython
         
         # Golang 
