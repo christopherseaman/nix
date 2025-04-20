@@ -4,13 +4,12 @@
 with lib;
 
 let
-  devShellScript = pkgs.writeShellScriptBin "devshell" ''
-    ${pkgs.nix}/bin/nix-shell ${config.home.homeDirectory}/.config/nix/dev-shell.nix --command fish "$@"
-  '';
-  
+  # Create a pure content with allowUnfree set declaratively
   devShellContent = ''
-    { pkgs ? import <nixpkgs> {} }:
-
+    let
+      # Import nixpkgs with allowUnfree configured directly
+      pkgs = import <nixpkgs> { config = { allowUnfree = true; }; };
+    in
     pkgs.mkShell {
       packages = with pkgs; [
         # Python core
@@ -34,26 +33,32 @@ let
         nixpkgs-fmt
         nil
 
-	# Shell
-	fish
+        # Shell
+        fish
         
         # IDE support
         # vscodium # Maybe if we add a GUI later
       ];
       
-      #shellHook = '''
-      #  # Python virtual environment setup
-      #  if [ ! -d .venv ]; then
-      #    uv venv
-      #  fi
-      #  source .venv/bin/activate
+      # Your shell hook is commented out, keeping it that way
+      # shellHook = '''
+      #   # Python virtual environment setup
+      #   if [ ! -d .venv ]; then
+      #     uv venv
+      #   fi
+      #   source .venv/bin/activate
+      #    
+      #   # Go setup
+      #   export GOPATH=$HOME/go
       #   
-      #  # Go setup
-      #  export GOPATH=$HOME/go
-      #  
-      #  echo "Development environment ready!"
-      #''';
+      #   echo "Development environment ready!"
+      # ''';
     }
+  '';
+
+  # Create a script that launches fish within the nix-shell
+  devShellScript = pkgs.writeShellScriptBin "devshell" ''
+    ${pkgs.nix}/bin/nix-shell ${config.home.homeDirectory}/.config/nix/dev-shell.nix --command fish "$@"
   '';
 in
 {
