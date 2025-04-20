@@ -35,7 +35,7 @@ let
         nil
         
         # IDE support
-        vscode.fhs
+        # vscodium # Maybe if we add a GUI later
       ];
       
       shellHook = '''
