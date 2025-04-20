@@ -12,30 +12,21 @@ let
     in
     pkgs.mkShell {
       packages = with pkgs; [
-        # Python core
+        # Core tools
         python311
-        python311Packages.pip
-        python311Packages.virtualenv
+        go
         
         # Development tools
-        uv
-	ruff
-	python311Packages.black
-        python311Packages.mypy
-        python311Packages.ipython
-        
-        # Golang 
-        go
-        gopls
-        
-        # Development utilities
         git
         nixpkgs-fmt
         nil
-
-        # Shell
         fish
       ];
+      
+      # Simple shellHook
+      shellHook = '''
+        echo "Development environment activated"
+      ''';
     }
   '';
 
