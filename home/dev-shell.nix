@@ -35,35 +35,23 @@ let
 
         # Shell
         fish
-        
-        # IDE support
-        # vscodium # Maybe if we add a GUI later
       ];
-      
-      # Your shell hook is commented out, keeping it that way
-      # shellHook = '''
-      #   # Python virtual environment setup
-      #   if [ ! -d .venv ]; then
-      #     uv venv
-      #   fi
-      #   source .venv/bin/activate
-      #    
-      #   # Go setup
-      #   export GOPATH=$HOME/go
-      #   
-      #   echo "Development environment ready!"
-      # ''';
     }
   '';
 
-  # Create a script that launches fish within the nix-shell
+  # Create a script that launches a PURE shell with fish
   devShellScript = pkgs.writeShellScriptBin "devshell" ''
+    ${pkgs.nix}/bin/nix-shell --pure ${config.home.homeDirectory}/.config/nix/dev-shell.nix --command fish "$@"
+  '';
+  
+  # Also create an impure version that preserves environment variables
+  impureDevShellScript = pkgs.writeShellScriptBin "impure-devshell" ''
     ${pkgs.nix}/bin/nix-shell ${config.home.homeDirectory}/.config/nix/dev-shell.nix --command fish "$@"
   '';
 in
 {
-  # This places the script in ~/.nix-profile/bin
-  home.packages = [ devShellScript ];
+  # This places the scripts in ~/.nix-profile/bin
+  home.packages = [ devShellScript impureDevShellScript ];
   
   # This creates the shell.nix file
   home.file.".config/nix/dev-shell.nix".text = devShellContent;
