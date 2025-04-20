@@ -13,7 +13,7 @@ let
     pkgs.mkShell {
       packages = with pkgs; [
         # Core tools
-        python311
+        python312
         go
         
         # Development tools
@@ -28,11 +28,11 @@ let
         starship
         
         # Python packages we want
-        python311Packages.pip
-        python311Packages.virtualenv
-        python311Packages.black
-        python311Packages.mypy
-        python311Packages.ipython
+        python312Packages.pip
+        python312Packages.virtualenv
+        python312Packages.black
+        python312Packages.mypy
+        python312Packages.ipython
       ];
       
       # Better shellHook that preserves Fish configuration
