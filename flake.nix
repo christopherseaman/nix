@@ -84,11 +84,11 @@
       };
       
       # Add devShells using flake-utils
-      devShells = flake-utils.lib.eachDefaultSystem (system: {
-        default = import ./devshells/default.nix { 
-          # Use the configured pkgs for devshells as well
-          pkgs = pkgsForSystem system; 
-        };
-      });
+      #devShells = flake-utils.lib.eachDefaultSystem (system: {
+      #  default = import ./devshells/default.nix { 
+      #    # Use the configured pkgs for devshells as well
+      #    pkgs = pkgsForSystem system; 
+      #  };
+      #});
     };
 }

@@ -5,7 +5,7 @@ with lib;
 
 let
   devShellScript = pkgs.writeShellScriptBin "devshell" ''
-    ${pkgs.nix}/bin/nix-shell ${config.home.homeDirectory}/.config/nix/dev-shell.nix "$@"
+    ${pkgs.nix}/bin/nix-shell ${config.home.homeDirectory}/.config/nix/dev-shell.nix --command fish "$@"
   '';
   
   devShellContent = ''
@@ -33,6 +33,9 @@ let
         git
         nixpkgs-fmt
         nil
+
+	# Shell
+	fish
         
         # IDE support
         # vscodium # Maybe if we add a GUI later

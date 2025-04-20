@@ -12,6 +12,32 @@
     ./nix-rebuild.nix
   ];
 
+  # Fish Shell
+  programs.fish = {
+    enable = true;
+    interactiveShellInit = ''
+      # Fish shell customizations
+      set -g fish_greeting ""  # Disable greeting
+    
+      # Initialize starship prompt if installed
+      command -v starship >/dev/null && starship init fish | source
+    '';
+  
+    # Add your fish plugins if desired
+    plugins = [
+      # Examples:
+      # { name = "z"; src = pkgs.fishPlugins.z.src; }
+      # { name = "fzf"; src = pkgs.fishPlugins.fzf.src; }
+    ];
+  
+    #shellAliases = {
+    #  # Your preferred aliases
+    #  ll = "ls -la";
+    #  ".." = "cd ..";
+    #  "..." = "cd ../..";
+    #};
+  };
+
   # SSH
   programs.ssh = {
     enable = true;
