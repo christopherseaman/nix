@@ -30,31 +30,30 @@ let
         python311Packages.ipython
       ];
       
-      # Simple shellHook
+      # Create a fish-specific shellHook that preserves the PATH
       shellHook = '''
+        # Create a fish-specific environment setup
+        mkdir -p ~/.config/fish/conf.d
+        echo "set -x PATH $PATH" > ~/.config/fish/conf.d/nix-shell-path.fish
+        
+        echo "Development environment activated"
       ''';
     }
   '';
 
-  # Create a script that launches fish in a pure environment but adds minimal
-  # required environment variables to make it work well
+  # Create a script that directly launches fish with the proper environment
   devShellScript = pkgs.writeShellScriptBin "devshell" ''
     ${pkgs.nix}/bin/nix-shell --pure \
       --keep HOME \
       --keep TERM \
       --keep TERMINFO \
       --keep COLORTERM \
-      ${config.home.homeDirectory}/.config/nix/dev-shell.nix "$@"
-  '';
-  
-  # Also create an impure version that preserves environment variables
-  impureDevShellScript = pkgs.writeShellScriptBin "impure-devshell" ''
-    ${pkgs.nix}/bin/nix-shell ${config.home.homeDirectory}/.config/nix/dev-shell.nix --command fish "$@"
+      ${config.home.homeDirectory}/.config/nix/dev-shell.nix
   '';
 in
 {
   # This places the scripts in ~/.nix-profile/bin
-  home.packages = [ devShellScript impureDevShellScript ];
+  home.packages = [ devShellScript ];
   
   # This creates the shell.nix file
   home.file.".config/nix/dev-shell.nix".text = devShellContent;
