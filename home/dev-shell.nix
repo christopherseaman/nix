@@ -21,18 +21,37 @@ let
         nixpkgs-fmt
         nil
         fish
+        
+        # Python packages we want
+        python311Packages.pip
+        python311Packages.virtualenv
+        python311Packages.black
+        python311Packages.mypy
+        python311Packages.ipython
       ];
       
       # Simple shellHook
       shellHook = '''
+        # Disable the command-not-found handler to avoid the database error
+        function __command_not_found_handler() {
+          echo "Command not found: $1"
+          return 127
+        }
+        
         echo "Development environment activated"
       ''';
     }
   '';
 
-  # Create a script that launches a PURE shell with fish
+  # Create a script that launches fish in a pure environment but adds minimal
+  # required environment variables to make it work well
   devShellScript = pkgs.writeShellScriptBin "devshell" ''
-    ${pkgs.nix}/bin/nix-shell --pure ${config.home.homeDirectory}/.config/nix/dev-shell.nix --command fish "$@"
+    ${pkgs.nix}/bin/nix-shell --pure \
+      --keep HOME \
+      --keep TERM \
+      --keep TERMINFO \
+      --keep COLORTERM \
+      ${config.home.homeDirectory}/.config/nix/dev-shell.nix --command fish "$@"
   '';
   
   # Also create an impure version that preserves environment variables
