@@ -32,13 +32,6 @@ let
       
       # Simple shellHook
       shellHook = '''
-        # Disable the command-not-found handler to avoid the database error
-        function __command_not_found_handler() {
-          echo "Command not found: $1"
-          return 127
-        }
-        
-        echo "Development environment activated"
       ''';
     }
   '';
@@ -51,7 +44,7 @@ let
       --keep TERM \
       --keep TERMINFO \
       --keep COLORTERM \
-      ${config.home.homeDirectory}/.config/nix/dev-shell.nix --command fish "$@"
+      ${config.home.homeDirectory}/.config/nix/dev-shell.nix "$@"
   '';
   
   # Also create an impure version that preserves environment variables
