@@ -6,12 +6,10 @@
 
   imports = [
     ./pbcopy.nix
-    ./code-server.nix  # This now imports the properly configured code-server module
+    ./code-server.nix
+    ./dev-shell.nix
     ./nix-rebuild.nix
   ];
-
-  # Enable pbcopy
-  pbcopy.enable = true;
 
   # SSH
   programs.ssh = {
@@ -52,7 +50,8 @@
   };
 
   # Keep the path config for any future scripts you might add
-  home.sessionPath = [ "$HOME/.local/bin" ];
+  # home.sessionPath = [ "$HOME/.local/bin" ];
+  home.sessionPath = [ "${config.home.homeDirectory}/.local/bin" ];
 
   # You can also remove code-server from home.packages if you're only using the Docker service
   home.packages = with pkgs; [
