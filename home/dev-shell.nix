@@ -21,7 +21,9 @@ let
         nixpkgs-fmt
         nil
         fish
-        
+        uv
+	ruff
+
         # Add starship for your prompt
         starship
         
@@ -52,7 +54,7 @@ let
   '';
 
   # Create a script that launches the shell with appropriate environment variables
-  devShellScript = pkgs.writeShellScriptBin "devshell" ''
+  devShellScript = pkgs.writeShellScriptBin "devshell-bash" ''
     ${pkgs.nix}/bin/nix-shell --pure \
       --keep HOME \
       --keep TERM \
@@ -66,7 +68,7 @@ let
   '';
   
   # Direct fish devshell
-  fishDevShellScript = pkgs.writeShellScriptBin "fish-devshell" ''
+  fishDevShellScript = pkgs.writeShellScriptBin "devshell" ''
     ${pkgs.nix}/bin/nix-shell --pure \
       --keep HOME \
       --keep TERM \
