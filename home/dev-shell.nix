@@ -38,18 +38,18 @@ let
         # vscodium # Maybe if we add a GUI later
       ];
       
-      shellHook = '''
-        # Python virtual environment setup
-        if [ ! -d .venv ]; then
-          uv venv
-        fi
-        source .venv/bin/activate
-        
-        # Go setup
-        export GOPATH=$HOME/go
-        
-        echo "Development environment ready!"
-      ''';
+      #shellHook = '''
+      #  # Python virtual environment setup
+      #  if [ ! -d .venv ]; then
+      #    uv venv
+      #  fi
+      #  source .venv/bin/activate
+      #   
+      #  # Go setup
+      #  export GOPATH=$HOME/go
+      #  
+      #  echo "Development environment ready!"
+      #''';
     }
   '';
 in
