@@ -67,6 +67,8 @@
           ./services/caddy.nix
           ./services/duckdns.nix
           ./services/tailscale.nix
+	  # ./services/docker.nix
+	  # ./services/code-server.nix
 
           # Add Home Manager as a NixOS module
           home-manager.nixosModules.home-manager

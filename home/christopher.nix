@@ -7,7 +7,7 @@
 
   imports = [
     ./pbcopy.nix
-    ./code-server.nix
+    # ./code-server.nix
     ./dev-shell.nix
     ./nix-rebuild.nix
   ];
@@ -61,8 +61,29 @@
   };
 
   home.packages = with pkgs; [
+    # Core tools
+    python312
+    go
+
+    # Development tools
+    git
     git-lfs
     gitAndTools.delta
+    nixpkgs-fmt
+    nil
+    fish
+    uv
+    ruff
+
+    # Shell tools
     tmux
+    starship
+
+    # Python packages we want
+    python312Packages.pip
+    python312Packages.virtualenv
+    python312Packages.black
+    python312Packages.mypy
+    python312Packages.ipython
   ];
 }

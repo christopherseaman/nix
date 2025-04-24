@@ -26,18 +26,6 @@
   system.activationScripts.mkCodeServerDirs = ''
     mkdir -p /home/christopher/.code-server
     mkdir -p /home/christopher/projects
-    
-    # Configure VS Code to use Fish
-    mkdir -p /home/christopher/.code-server/data/Machine
-    cat > /home/christopher/.code-server/data/Machine/settings.json << 'EOF'
-    {
-      "terminal.integrated.defaultProfile.linux": "fish",
-      "terminal.integrated.profiles.linux": {
-        "fish": {
-	  "path": "/usr/bin/fish"
-         }
-      }
-    }
     EOF
     
     # Set proper permissions
