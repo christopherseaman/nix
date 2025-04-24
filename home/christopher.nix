@@ -1,6 +1,8 @@
-# /etc/nixos/home/christopher.nix
 { config, pkgs, ... }:
 
+let
+  commonPackages = import ./common-packages.nix { inherit pkgs; };
+in
 {
   home.stateVersion = "24.11";
   nixpkgs.config.allowUnfree = true;
@@ -60,30 +62,12 @@
     enable = true;
   };
 
-  home.packages = with pkgs; [
-    # Core tools
-    python312
-    go
-
-    # Development tools
-    git
-    git-lfs
-    gitAndTools.delta
-    nixpkgs-fmt
-    nil
-    fish
-    uv
-    ruff
-
-    # Shell tools
-    tmux
-    starship
-
-    # Python packages we want
-    python312Packages.pip
-    python312Packages.virtualenv
-    python312Packages.black
-    python312Packages.mypy
-    python312Packages.ipython
+  home.packages = commonPackages ++ [
+    (pkgs.writeShellScriptBin "aider" ''
+      set -a
+      . /var/lib/private/secrets.env
+      set +a
+      exec ${pkgs.aider}/bin/aider "$@"
+    '')
   ];
 }

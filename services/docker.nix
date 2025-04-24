@@ -1,18 +1,12 @@
 { config, pkgs, ... }: {
   virtualisation.docker = {
     enable = true;
+    rootless = {
+      enable = true;
+      setSocketVariable = true; # sets DOCKER_HOST for the user
+      user = "christopher";
+    };
     storageDriver = "overlay2";
-
-    # Performance tweaks
-    #extraOptions = ''
-    #  --storage-opt overlay2.override_kernel_check=true
-    #  --default-ulimit nofile=65536:65536
-    #  --default-ulimit memlock=-1:-1
-    #  --log-opt max-size=10m --log-opt max-file=3
-    #'';
-
-    #logDriver = "json-file";
-    
     autoPrune = {
       enable = true;
       dates = "weekly";
@@ -20,6 +14,6 @@
     };
   };
 
-  # Explicitly use Docker as the container backend
-  virtualisation.oci-containers.backend = "docker";
+  # Use rootless Docker as the container backend
+  virtualisation.oci-containers.backend = "docker-rootless";
 }

@@ -1,0 +1,49 @@
+{ pkgs }:
+
+with pkgs; [
+  # Core tools
+  python312
+  go
+  rustc
+  cargo
+  nodejs_20
+
+  # Dev tools
+  git
+  git-lfs
+  gitAndTools.delta
+  nixpkgs-fmt
+  nil
+  uv
+  ruff
+  fd
+  ripgrep
+  bat
+  jq
+  neovim
+  aider
+  docker-compose
+  tree
+  wget
+  curl
+  fzf
+
+  # Shell tools
+  fish
+  tmux
+  starship
+
+  # Python packages
+  python312Packages.pip
+  python312Packages.virtualenv
+  python312Packages.black
+  python312Packages.mypy
+  python312Packages.ipython
+
+  # Language servers
+  pyright
+  gopls
+  rust-analyzer
+  nodePackages.typescript-language-server
+  nodePackages.vscode-langservers-extracted
+]
