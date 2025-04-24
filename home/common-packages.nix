@@ -21,7 +21,7 @@ with pkgs; [
   bat
   jq
   neovim
-  aider
+  aider-chat
   docker-compose
   tree
   wget
