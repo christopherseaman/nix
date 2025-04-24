@@ -4,7 +4,6 @@
     rootless = {
       enable = true;
       setSocketVariable = true; # sets DOCKER_HOST for the user
-      user = "christopher";
     };
     storageDriver = "overlay2";
     autoPrune = {
