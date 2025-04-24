@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   commonPackages = import ./common-packages.nix { inherit pkgs; };
@@ -11,7 +11,6 @@ let
       paths = commonPackages;
     };
     extraCommands = ''
-      echo ${pkgs.fish}/bin/fish >> /etc/shells
       git config --system user.name "Christopher Seaman"
       git config --system user.email "86775+christopherseaman@users.noreply.github.com"
     '';

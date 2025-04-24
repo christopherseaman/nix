@@ -9,7 +9,7 @@ in
 
   imports = [
     ./pbcopy.nix
-    # ./code-server.nix
+    ./code-server.nix
     ./dev-shell.nix
     ./nix-rebuild.nix
   ];
