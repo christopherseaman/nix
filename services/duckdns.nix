@@ -18,7 +18,7 @@ in {
     tokenEnvironmentFile = mkOption {
       type = types.str;
       description = "Path to environment file containing DUCKDNS_TOKEN";
-      default = "/var/lib/private/secrets.env";
+      default = "/var/lib/secrets.env";
     };
     
     interval = mkOption {
@@ -73,7 +73,7 @@ in {
       # Your pre-configured settings
       services.duckdns = {
         domain = "codernac";
-        tokenEnvironmentFile = "/var/lib/private/secrets.env";
+        tokenEnvironmentFile = "/var/lib/secrets.env";
         interval = 5;  # Update every 5 minutes
         ipv4 = true;
         ipv6 = false;

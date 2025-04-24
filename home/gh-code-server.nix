@@ -34,7 +34,9 @@ in {
       
       # Environment variables - make sure all needed tools are available
       Environment = "PATH=${pkgs.coreutils}/bin:${pkgs.bash}/bin:${pkgs.nodejs}/bin:/run/current-system/sw/bin";
-      EnvironmentFile = "/var/lib/private/secrets.env";
+      EnvironmentFile = "/var/lib/secrets.env";
+    sha256 = "sha256:72b01086e93a4bab68137159a4f3163446f12da1d892732e2248c007610e85a6";
+
       
       # Restart settings
       Restart = "always";

@@ -10,7 +10,7 @@
       }
       
       carnac.badmath.org, codernac.duckdns.org {
-        reverse_proxy localhost:8080 {
+        reverse_proxy localhost:8443 {
           header_up Host {host}
 	  header_up X-Real-IP {remote}
 	  header_up X-Forwarded-For {remote}

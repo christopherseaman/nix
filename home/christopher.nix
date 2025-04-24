@@ -65,7 +65,7 @@ in
   home.packages = commonPackages ++ [
     (pkgs.writeShellScriptBin "aider-chat" ''
       set -a
-      . /var/lib/private/secrets.env
+      . /var/lib/secrets.env
       set +a
       exec ${pkgs.aider-chat}/bin/aider "$@"
     '')
