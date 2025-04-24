@@ -5,7 +5,7 @@ let
   codeServerBase = pkgs.dockerTools.pullImage {
     imageName = "linuxserver/code-server";
     imageDigest = "sha256:72b01086e93a4bab68137159a4f3163446f12da1d892732e2248c007610e85a6";
-    sha256 = "quQmoLstCpBxOJJYWaEwVbkJbFP6kFBHyuR9CV3/ZNc=";
+    sha256 = "+DPKI9wefBQRhzZfOTQPA2iEkoCxML7oWdrldAXNHPs=";
     finalImageName = "sqrlly/code-server";
     finalImageTag = "4.99.3";
   };
