@@ -63,7 +63,7 @@ in
   };
 
   home.packages = commonPackages ++ [
-    (pkgs.writeShellScriptBin "aider" ''
+    (pkgs.writeShellScriptBin "aider-chat" ''
       set -a
       . /var/lib/private/secrets.env
       set +a
