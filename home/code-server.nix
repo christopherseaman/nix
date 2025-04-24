@@ -2,18 +2,21 @@
 
 let
   commonPackages = import ./common-packages.nix { inherit pkgs; };
+  codeServerBase = pkgs.dockerTools.pullImage {
+    imageName = "linuxserver/code-server";
+    imageDigest = "sha256:72b01086e93a4bab68137159a4f3163446f12da1d892732e2248c007610e85a6";
+    sha256 = "quQmoLstCpBxOJJYWaEwVbkJbFP6kFBHyuR9CV3/ZNc=";
+    finalImageName = "linuxserver/code-server";
+    finalImageTag = "4.99.3";
+  };
   customCodeServerImage = pkgs.dockerTools.buildImage {
     name = "sqrlly-code-server";
     tag = "4.99.3";
-    fromImage = "linuxserver/code-server:4.99.3";
+    fromImage = codeServerBase;
     copyToRoot = pkgs.buildEnv {
       name = "code-server-extra";
       paths = commonPackages;
     };
-    extraCommands = ''
-      # git config --system user.name "Christopher Seaman"
-      # git config --system user.email "86775+christopherseaman@users.noreply.github.com"
-    '';
   };
 in
 {
@@ -36,6 +39,7 @@ in
       '';
       ExecStart = ''
         ${pkgs.docker}/bin/docker run --rm \
+          --user 1000:100 \
           --name code-server \
           -p 127.0.0.1:8443:8443 \
           -e PUID=1000 \
@@ -47,7 +51,10 @@ in
           --env-file /var/lib/private/secrets.env \
           -v /home/christopher/.code-server:/config \
           -v /home/christopher/projects:/config/workspace \
-          sqrlly-code-server:4.99.3
+          sqrlly-code-server:4.99.3 \
+          sh -c '${pkgs.git}/bin/git config --global user.name "Christopher Seaman" && \
+                 ${pkgs.git}/bin/git config --global user.email "86775+christopherseaman@users.noreply.github.com" && \
+                 exec code-server'
       '';
       Restart = "always";
       RestartSec = 10;
@@ -57,3 +64,4 @@ in
     };
   };
 }
+
