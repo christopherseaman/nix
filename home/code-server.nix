@@ -37,24 +37,7 @@ in
         ${pkgs.docker}/bin/docker rm -f code-server || true
         ${pkgs.docker}/bin/docker load -i ${customCodeServerImage}
       '';
-      ExecStart = ''
-        ${pkgs.docker}/bin/docker run --rm \
-          --user 1000:100 \
-          --name code-server \
-          -p 127.0.0.1:8443:8443 \
-          -e PUID=1000 \
-          -e PGID=100 \
-          -e TZ=${config.home.time.timeZone or "UTC"} \
-          -e DEFAULT_WORKSPACE=/config/workspace \
-          -e SHELL=${pkgs.fish}/bin/fish \
-          --env-file /var/lib/private/secrets.env \
-          -v /home/christopher/.code-server:/config \
-          -v /home/christopher/projects:/config/workspace \
-          sqrlly-code-server:4.99.3 \
-          sh -c "${pkgs.git}/bin/git config --global user.name 'Christopher Seaman' && \
-                 ${pkgs.git}/bin/git config --global user.email '86775+christopherseaman@users.noreply.github.com' && \
-                 exec code-server"
-      '';
+      ExecStart = "${pkgs.docker}/bin/docker run --rm --user 1000:100 --name code-server -p 127.0.0.1:8443:8443 -e PUID=1000 -e PGID=100 -e TZ=${config.home.time.timeZone or "UTC"} -e DEFAULT_WORKSPACE=/config/workspace -e SHELL=${pkgs.fish}/bin/fish --env-file /var/lib/private/secrets.env -v /home/christopher/.code-server:/config -v /home/christopher/projects:/config/workspace sqrlly-code-server:4.99.3 sh -c '${pkgs.git}/bin/git config --global user.name \"Christopher Seaman\" && ${pkgs.git}/bin/git config --global user.email \"86775+christopherseaman@users.noreply.github.com\" && exec code-server'";
       Restart = "always";
       RestartSec = 10;
     };
