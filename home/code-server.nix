@@ -42,6 +42,8 @@ in
           -e PGID=100 \
           -e TZ=${config.home.time.timeZone or "UTC"} \
           -e DEFAULT_WORKSPACE=/config/workspace \
+          -e SHELL=${pkgs.fish}/bin/fish \
+          -e PATH=/code-server-extra/bin:$PATH \
           --env-file /var/lib/private/secrets.env \
           -v /home/christopher/.code-server:/config \
           -v /home/christopher/projects:/config/workspace \
