@@ -2,10 +2,16 @@
 
 let
   commonPackages = import ./common-packages.nix { inherit pkgs; };
+  customCodeServerImage = pkgs.dockerTools.pullImage {
+    imageName = "linuxserver/code-server";
+    imageDigest = "sha256:72b01086e93a4bab68137159a4f3163446f12da1d892732e2248c007610e85a6"
+    finalImageName = "linuxserver/code-server";
+    finalImageTag = "4.99.3";
+  };
   customCodeServerImage = pkgs.dockerTools.buildImage {
     name = "sqrlly-code-server";
     tag = "4.99.3";
-    fromImage = "docker://linuxserver/code-server:4.99.3";
+    fromImage = codeServerBase;
     copyToRoot = pkgs.buildEnv {
       name = "code-server-extra";
       paths = commonPackages;
