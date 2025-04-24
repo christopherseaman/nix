@@ -5,14 +5,14 @@ let
   customCodeServerImage = pkgs.dockerTools.buildImage {
     name = "sqrlly-code-server";
     tag = "4.99.3";
-    fromImage = "docker://linuxserver/code-server:4.99.3";
+    fromImage = "linuxserver/code-server:4.99.3";
     copyToRoot = pkgs.buildEnv {
       name = "code-server-extra";
       paths = commonPackages;
     };
     extraCommands = ''
-      git config --system user.name "Christopher Seaman"
-      git config --system user.email "86775+christopherseaman@users.noreply.github.com"
+      # git config --system user.name "Christopher Seaman"
+      # git config --system user.email "86775+christopherseaman@users.noreply.github.com"
     '';
   };
 in
