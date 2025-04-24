@@ -67,7 +67,7 @@ in
       set -a
       . /var/lib/private/secrets.env
       set +a
-      exec ${pkgs.aider}/bin/aider "$@"
+      exec ${pkgs.aider-chat}/bin/aider "$@"
     '')
   ];
 }
