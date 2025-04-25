@@ -2,7 +2,14 @@
 
 with pkgs; [
   # Fonts
-  nerdfonts.override { fonts = [ "0xProto" "FiraCode" "FiraMono" "SourceCodePro" "SourceSansPro" "SourceSerifPro" ]; }
+  nerdfonts.override { fonts = [ "SourceCodePro" "SourceSansPro" "SourceSerifPro" ]; }
+  nerd-fonts._0xproto
+  nerd-fonts.FiraCode
+  nerd-fonts.FiraMono
+  nerd-fonts.SourceCodePro
+  source-serif
+  source-sans
+  ia-writer-quattro
 
   # Desktop apps
   discord
