@@ -4,17 +4,10 @@ FROM lscr.io/linuxserver/code-server:4.99.3
 RUN apt-get update && \
     apt-get install -y curl xz-utils sudo && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Create workspace directory and set permissions
-RUN mkdir -p /config/workspace && \
-    chown -R abc:abc /config/workspace
-
-# Create Nix store with proper permissions
-RUN mkdir -m 0755 -p /nix && chown abc:abc /nix
-
-# Create /config/.nix-profile directory with proper permissions
-RUN mkdir -p /config/.local/state/nix && chown -R abc:abc /config/.local
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /config/workspace /nix /config/.local/state/nix && \
+    chown -R abc:abc /config /nix && \
+    chmod 755 /nix
 
 # Copy Nix package configuration
 COPY common-packages.nix /tmp/common-packages.nix
@@ -46,8 +39,10 @@ RUN . $HOME/.nix-profile/etc/profile.d/nix.sh && \
     mkdir -p /config/.local/bin && \
     cd /tmp && \
     nix-build && \
-    ln -sf /tmp/result/bin/* /config/.local/bin/ || true
-
+    ln -sf /tmp/result/bin/* /config/.local/bin/ || true && \
+    rm -rf /tmp/common-packages.nix /tmp/default.nix /tmp/result
+RUN . $HOME/.nix-profile/etc/profile.d/nix.sh && \
+    nix-store --gc
 # Configure Git
 RUN . $HOME/.nix-profile/etc/profile.d/nix.sh && \
     git config --global user.name "Christopher Seaman" && \

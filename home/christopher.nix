@@ -2,6 +2,7 @@
 
 let
   commonPackages = import ./common-packages.nix { inherit pkgs; };
+  guiApps = import ./gui-apps.nix { inherit pkgs; };
 in
 {
   home.stateVersion = "24.11";
@@ -70,7 +71,7 @@ in
     enable = true;
   };
 
-  home.packages = commonPackages ++ [
+  home.packages = commonPackages ++ guiApps ++ [
     (pkgs.writeShellScriptBin "aider-chat" ''
       set -a
       . /var/lib/secrets.env
@@ -78,4 +79,7 @@ in
       exec ${pkgs.aider-chat}/bin/aider "$@"
     '')
   ];
+
+  # Fonts config (optional, for fontconfig)
+  fonts.fontconfig.enable = true;
 }
