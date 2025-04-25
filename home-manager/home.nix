@@ -6,6 +6,9 @@ let
   # guiApps = import ./gui-apps.nix { inherit pkgs; };
 in
 {
+  home.username = "cseaman";
+  home.homeDirectory = "/Users/cseaman";
+
   home.stateVersion = "24.11";
   nixpkgs.config.allowUnfree = true;
 
