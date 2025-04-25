@@ -80,17 +80,8 @@
       # System tools
       git
       wget
-      neovim
       caddy
-      starship
-
-      # Fonts
-      _0xproto
-      source-code-pro
-      source-serif
-      source-sans
+      # Remove user-specific packages like neovim, starship, fonts
     ];
-
-    variables.EDITOR = "nvim";
   };
 }

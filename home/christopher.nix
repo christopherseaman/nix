@@ -79,8 +79,18 @@ in
       set +a
       exec ${pkgs.aider-chat}/bin/aider "$@"
     '')
+    # Add systemPackages that are user-specific here:
+    pkgs.neovim
+    pkgs.starship
+    pkgs._0xproto
+    pkgs.source-code-pro
+    pkgs.source-serif
+    pkgs.source-sans
   ];
 
-  # Fonts config (optional, for fontconfig)
+  home.sessionVariables = {
+    EDITOR = "nvim";
+  };
+
   fonts.fontconfig.enable = true;
 }

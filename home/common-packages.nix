@@ -11,6 +11,7 @@ with pkgs; [
   # Dev tools
   git
   git-lfs
+  gh
   gitAndTools.delta
   nixpkgs-fmt
   nil
