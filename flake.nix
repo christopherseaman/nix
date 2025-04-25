@@ -80,7 +80,7 @@
               inherit code-server-pkg;
               pkgs = pkgs;
             };
-            home-manager.users.christopher = import ./home/christopher.nix;
+            home-manager.users.christopher = import ./home-manager/home.nix;
           }
         ];
       };
