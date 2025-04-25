@@ -2,11 +2,10 @@
 
 with pkgs; [
   # Fonts
-  nerdfonts.override { fonts = [ "SourceCodePro" "SourceSansPro" "SourceSerifPro" ]; }
-  nerd-fonts._0xproto
-  nerd-fonts.FiraCode
-  nerd-fonts.FiraMono
-  nerd-fonts.SourceCodePro
+  _0xproto
+  source-code-pro
+  fira-code
+  fira-mono
   source-serif
   source-sans
   ia-writer-quattro
@@ -18,7 +17,7 @@ with pkgs; [
   _1password
   yt-dlp
   ghostty
-  altserver
+#  altserver
   signal-desktop
   slack
   spotify
@@ -27,11 +26,10 @@ with pkgs; [
   itsycal
   daisydisk
   handbrake
-  mountainduck
+  mountain-duck
   obsidian
-  onyx
-  transmission_gtk
-  balena-etcher
-  raspberry-pi-imager
+#  onyx
+#  balena-etcher
+#  raspberry-pi-imager
   qflipper
 ]
