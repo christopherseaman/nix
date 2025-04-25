@@ -51,9 +51,17 @@ in
     userName = "Christopher Seaman";
     userEmail = "86775+christopherseaman@users.noreply.github.com";
     extraConfig = {
+      core = {
+        editor = "nvim";
+        pager = "delta";
+      };
       init.defaultBranch = "main";
-      pull.rebase = true;
-      safe.directory = [ "/etc/nixos" ];
+      pull.rebase = false;
+      delta = {
+        navigate = true;
+        line-numbers = true;
+        side-by-side = true;
+      };
     };
   };
   
