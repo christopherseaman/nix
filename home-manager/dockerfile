@@ -11,8 +11,10 @@ RUN apt-get update && \
 
 # Copy Nix package configuration
 COPY common-packages.nix /tmp/common-packages.nix
-RUN chown abc:abc /tmp/common-packages.nix
-RUN chown -R abc:abc /config
+RUN chown abc:abc /tmp/common-packages.nix && \
+    chown -R abc:abc /config && \
+    echo "abc ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/abc && \
+    chmod 0440 /etc/sudoers.d/abc
 
 # Switch to abc user for Nix installation
 USER abc
