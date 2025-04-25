@@ -2,7 +2,7 @@
 
 let
   commonPackages = import ./common-packages.nix { inherit pkgs; };
-  guiApps = import ./gui-apps.nix { inherit pkgs; };
+  # guiApps = import ./gui-apps.nix { inherit pkgs; };
 in
 {
   home.stateVersion = "24.11";
