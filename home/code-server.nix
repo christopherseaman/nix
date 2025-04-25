@@ -20,7 +20,6 @@
       '';
       ExecStart = ''
         ${pkgs.docker}/bin/docker run --rm \
-          --user 1000:100 \
           --name code-server \
           -p 127.0.0.1:8443:8443 \
           -e PUID=1000 \
