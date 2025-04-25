@@ -15,8 +15,7 @@
     };
     Service = {
       ExecStartPre = ''
-        ${pkgs.docker}/bin/docker rm -f code-server || true
-        ${pkgs.docker}/bin/docker pull sqrlly/code-server:4.99.3
+        ${pkgs.docker}/bin/docker rm -f code-server || true ; ${pkgs.docker}/bin/docker pull sqrlly/code-server:4.99.3
       '';
       ExecStart = ''
       	${pkgs.docker}/bin/docker run --rm --name code-server -p 127.0.0.1:8443:8443 -e PUID=1000 -e PGID=100 -e TZ=${config.home.time.timeZone or "UTC"} -e DEFAULT_WORKSPACE=/config/workspace -e SHELL=${pkgs.fish}/bin/fish --env-file /var/lib/secrets.env -v /home/christopher/.code-server:/config -v /home/christopher/projects:/config/workspace sqrlly/code-server:4.99.3
