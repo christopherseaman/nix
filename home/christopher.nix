@@ -2,6 +2,7 @@
 
 let
   commonPackages = import ./common-packages.nix { inherit pkgs; };
+  guiApps = [];
   # guiApps = import ./gui-apps.nix { inherit pkgs; };
 in
 {
