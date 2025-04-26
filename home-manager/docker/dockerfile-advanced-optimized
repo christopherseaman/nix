@@ -84,8 +84,12 @@ RUN curl -sSLf https://astral.sh/uv/install.sh | sh && \
 
 # Install Python packages
 RUN $HOME/.local/bin/uv tool install ruff && \
-    # Install aider-chat using pipx
-    pipx install aider-chat && \
+    # Install aider-install using pipx
+    pipx install aider-install && \
+    # Run aider-install
+    $HOME/.local/bin/aider-install && \
+    # Remove aider-install after using it
+    pipx uninstall aider-install && \
     # Ensure pipx binaries are in PATH
     echo 'export PATH=$PATH:$HOME/.local/bin' >> $HOME/.bashrc
 
