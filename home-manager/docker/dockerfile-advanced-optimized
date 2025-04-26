@@ -79,11 +79,13 @@ WORKDIR /config
 RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes --bin-dir=/config/.local/bin
 
 # Install uv (Python package installer)
-RUN curl -sSf https://astral.sh/uv/install.sh | sh
+RUN curl -sSf https://astral.sh/uv/install.sh | sh && \
+    echo 'export PATH=$PATH:$HOME/.cargo/bin' >> $HOME/.bashrc && \
+    echo 'set -x PATH $PATH $HOME/.cargo/bin' >> $HOME/.config/fish/config.fish
 
 # Install Python packages
-RUN uv tool install ruff && \
-    uv pip install aider-chat
+RUN $HOME/.cargo/bin/uv tool install ruff && \
+    $HOME/.cargo/bin/uv pip install aider-chat
 
 # Configure Git
 RUN git config --global user.name "Christopher Seaman" && \
@@ -107,7 +109,7 @@ RUN mkdir -p /config/.config/fish && \
 # Make sure the path is properly set for code-server
 RUN mkdir -p /config/.config/code-server && \
     echo '#!/usr/bin/env bash\n\
-export PATH=$PATH:/config/.local/bin:$HOME/.local/bin:/usr/local/go/bin:$HOME/go/bin\n\
+export PATH=$PATH:/config/.local/bin:$HOME/.local/bin:/usr/local/go/bin:$HOME/go/bin:$HOME/.cargo/bin\n\
 exec /usr/bin/entrypoint.sh "$@"' > /config/entrypoint-wrapper.sh && \
     chmod +x /config/entrypoint-wrapper.sh
 
