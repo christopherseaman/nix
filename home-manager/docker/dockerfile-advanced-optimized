@@ -88,9 +88,9 @@ RUN $HOME/.local/bin/uv tool install ruff && \
     export PATH="$PATH:$HOME/.local/bin" && \
     # Install aider-install using pipx
     pipx install aider-install && \
-    # Run aider using full path
-    $HOME/.local/bin/aider --install && \
-    # Remove aider-install after using it
+    # Run aider-install to install aider
+    $HOME/.local/bin/aider-install && \
+    # Remove aider-install after it has installed aider
     pipx uninstall aider-install && \
     # Ensure pipx binaries are in PATH for future sessions
     echo 'export PATH=$PATH:$HOME/.local/bin' >> $HOME/.bashrc
