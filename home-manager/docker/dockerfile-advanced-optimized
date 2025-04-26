@@ -85,11 +85,11 @@ RUN curl -sSLf https://astral.sh/uv/install.sh | sh && \
     echo 'set -x PATH $PATH $HOME/.local/bin' >> $HOME/.config/fish/config.fish
 
 # Install Python packages
-RUN $HOME/.local/bin/uv tool install ruff && \
+RUN $HOME/.local/bin/uv tool install ruff
     # Install aider-chat directly using pip
-    pip install --user aider-install && \
-    aider-install --user && \
-    pip uninstall -y aider-install
+RUN pip install --user aider-install
+RUN aider-install --user
+RUN pip uninstall -y aider-install
 
 # Configure Git
 RUN git config --global user.name "Christopher Seaman" && \
