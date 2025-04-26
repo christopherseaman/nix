@@ -4,30 +4,29 @@ with pkgs; [
   # Core tools
   python312
   go
-  rustc
-  cargo
-  nodejs_20
+#  rustc
+#  cargo
+#  nodejs_20
 
   # Dev tools
   git
-  git-lfs
+#  git-lfs
   gh
   gitAndTools.delta
   nixpkgs-fmt
-  nil
   uv
   ruff
-  fd
+#  fd
   ripgrep
   bat
-  jq
+#  jq
   neovim
   aider-chat
   docker-compose
   tree
   wget
   curl
-  fzf
+#  fzf
 
   # Shell tools
   fish
@@ -42,9 +41,9 @@ with pkgs; [
   python312Packages.ipython
 
   # Language servers
-  pyright
-  gopls
-  rust-analyzer
-  nodePackages.typescript-language-server
-  nodePackages.vscode-langservers-extracted
+#  pyright
+#  gopls
+#  rust-analyzer
+#  nodePackages.typescript-language-server
+#  nodePackages.vscode-langservers-extracted
 ]
