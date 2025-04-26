@@ -86,8 +86,8 @@ RUN curl -sSLf https://astral.sh/uv/install.sh | sh && \
 
 # Install Python packages
 RUN $HOME/.local/bin/uv tool install ruff && \
-    $HOME/.local/bin/uv pip install aider-chat && \
-    aider-install
+    $HOME/.local/bin/uv pip install --python /usr/bin/python3 aider-chat && \
+    $HOME/.local/bin/aider-install
 
 # Configure Git
 RUN git config --global user.name "Christopher Seaman" && \
