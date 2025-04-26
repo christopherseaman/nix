@@ -86,8 +86,14 @@ RUN curl -sSLf https://astral.sh/uv/install.sh | sh && \
 
 # Install Python packages
 RUN $HOME/.local/bin/uv tool install ruff && \
-    $HOME/.local/bin/uv pip install --python /usr/bin/python3 aider-chat && \
-    $HOME/.local/bin/aider-install
+    # Create a temporary virtual environment for aider installation
+    python3 -m venv /tmp/aider-venv && \
+    # Install aider-chat in the virtual environment
+    /tmp/aider-venv/bin/pip install aider-chat && \
+    # Run aider-install from the virtual environment to install in the actual environment
+    /tmp/aider-venv/bin/aider-install && \
+    # Clean up the temporary virtual environment
+    rm -rf /tmp/aider-venv
 
 # Configure Git
 RUN git config --global user.name "Christopher Seaman" && \
