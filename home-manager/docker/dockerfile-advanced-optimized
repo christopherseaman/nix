@@ -88,7 +88,7 @@ RUN curl -sSLf https://astral.sh/uv/install.sh | sh && \
 RUN $HOME/.local/bin/uv tool install ruff && \
     # Install aider-chat directly using pip
     pip install --user aider-install && \
-    aider-install && \
+    aider-install --user && \
     pip uninstall -y aider-install
 
 # Configure Git
