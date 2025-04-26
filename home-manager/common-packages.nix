@@ -13,7 +13,7 @@ with pkgs; [
 #  git-lfs
   gh
   gitAndTools.delta
-  nixpkgs-fmt
+#  nixpkgs-fmt
   uv
   ruff
 #  fd
@@ -22,8 +22,8 @@ with pkgs; [
 #  jq
   neovim
   aider-chat
-  docker-compose
-  tree
+#  docker-compose
+#  tree
   wget
 #  fzf
 
