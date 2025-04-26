@@ -2,7 +2,7 @@
 
 with pkgs; [
   # Core tools
-  python312
+  python312Minimal
   go
 #  rustc
 #  cargo
@@ -25,7 +25,6 @@ with pkgs; [
   docker-compose
   tree
   wget
-  curl
 #  fzf
 
   # Shell tools

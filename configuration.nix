@@ -22,7 +22,8 @@
   # Networking
   networking = {
     hostName = "carnac";
-    networkmanager.enable = true;
+    networkmanager.enable = false;
+    useDHCP = true;
     proxy.noProxy = "127.0.0.1,localhost,internal.domain";
     firewall.enable = false;
   };
