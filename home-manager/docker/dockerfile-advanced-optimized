@@ -81,11 +81,13 @@ RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes --bin-dir=/config/.
 # Install uv (Python package installer)
 RUN curl -sSf https://astral.sh/uv/install.sh | sh && \
     echo 'export PATH=$PATH:$HOME/.cargo/bin' >> $HOME/.bashrc && \
+    mkdir -p $HOME/.config/fish && \
     echo 'set -x PATH $PATH $HOME/.cargo/bin' >> $HOME/.config/fish/config.fish
 
 # Install Python packages
 RUN $HOME/.cargo/bin/uv tool install ruff && \
-    $HOME/.cargo/bin/uv pip install aider-chat
+    $HOME/.cargo/bin/uv pip install aider-chat && \
+    aider-install
 
 # Configure Git
 RUN git config --global user.name "Christopher Seaman" && \
