@@ -45,7 +45,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | s
 RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
 
 # Install uv (Python package installer)
-RUN curl -sSf https://astral.sh/uv/install.sh | sh && \
+RUN curl -sSLf https://astral.sh/uv/install.sh | sh && \
     echo 'export PATH=$PATH:$HOME/.cargo/bin' >> $HOME/.bashrc && \
     mkdir -p $HOME/.config/fish && \
     echo 'set -x PATH $PATH $HOME/.cargo/bin' >> $HOME/.config/fish/config.fish
