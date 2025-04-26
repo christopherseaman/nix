@@ -62,9 +62,10 @@ RUN curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linu
     rm nvim-linux-arm64.tar.gz
 
 # Install ripgrep and bat
-RUN curl -LO https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep_14.1.1_arm64.deb && \
-    sudo dpkg -i ripgrep_14.1.1_arm64.deb && \
-    rm ripgrep_14.1.1_arm64.deb && \
+RUN curl -LO https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-aarch64-unknown-linux-gnu.tar.gz && \
+    tar -xzf ripgrep-14.1.1-aarch64-unknown-linux-gnu.tar.gz && \
+    sudo cp ripgrep-14.1.1-aarch64-unknown-linux-gnu/rg /usr/local/bin/ && \
+    rm -rf ripgrep-14.1.1-aarch64-unknown-linux-gnu.tar.gz ripgrep-14.1.1-aarch64-unknown-linux-gnu && \
     curl -LO https://github.com/sharkdp/bat/releases/download/v0.25.0/bat_0.25.0_arm64.deb && \
     sudo dpkg -i bat_0.25.0_arm64.deb && \
     rm bat_0.25.0_arm64.deb

@@ -30,7 +30,11 @@ USER root
 WORKDIR /tmp/tools
 
 # Download binary tools
-RUN curl -LO https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep_14.1.1_arm64.deb && \
+RUN curl -LO https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-aarch64-unknown-linux-gnu.tar.gz && \
+    tar -xzf ripgrep-14.1.1-aarch64-unknown-linux-gnu.tar.gz && \
+    mkdir -p /tmp/bin && \
+    cp ripgrep-14.1.1-aarch64-unknown-linux-gnu/rg /tmp/bin/ && \
+    rm -rf ripgrep-14.1.1-aarch64-unknown-linux-gnu.tar.gz ripgrep-14.1.1-aarch64-unknown-linux-gnu && \
     curl -LO https://github.com/sharkdp/bat/releases/download/v0.25.0/bat_0.25.0_arm64.deb && \
     curl -LO https://github.com/dandavison/delta/releases/download/0.18.2/git-delta_0.18.2_arm64.deb
 
@@ -41,6 +45,7 @@ FROM base
 COPY --from=go-builder /usr/local/go /usr/local/go
 COPY --from=nvim-builder /opt/nvim-linux-arm64 /opt/nvim-linux-arm64
 COPY --from=tool-builder /tmp/tools/*.deb /tmp/
+COPY --from=tool-builder /tmp/bin/rg /usr/local/bin/
 
 # Install essential packages
 RUN apt-get update && \
