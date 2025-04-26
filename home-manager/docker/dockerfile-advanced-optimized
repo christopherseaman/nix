@@ -90,8 +90,8 @@ RUN $HOME/.local/bin/uv tool install ruff && \
     python3 -m venv /tmp/aider-venv && \
     # Install aider-chat in the virtual environment
     /tmp/aider-venv/bin/pip install aider-chat && \
-    # Run aider-install from the virtual environment to install in the actual environment
-    /tmp/aider-venv/bin/aider-install && \
+    # Run the aider installation process using Python module
+    /tmp/aider-venv/bin/python -c "from aider.install import install; install()" && \
     # Clean up the temporary virtual environment
     rm -rf /tmp/aider-venv
 
