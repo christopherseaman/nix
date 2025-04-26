@@ -1,21 +1,5 @@
 {
   "nodes": {
-    "code-server-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1744917721,
-        "narHash": "sha256-p4y4hCEK26NbkrG0Uf7nYku1XknvDqA59yOGtz6IjMA=",
-        "owner": "coder",
-        "repo": "code-server",
-        "rev": "175729905bcbdc2b5ca7491b1c60255c755067ef",
-        "type": "github"
-      },
-      "original": {
-        "owner": "coder",
-        "repo": "code-server",
-        "type": "github"
-      }
-    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -73,7 +57,6 @@
     },
     "root": {
       "inputs": {
-        "code-server-src": "code-server-src",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs"

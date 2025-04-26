@@ -11,18 +11,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Import code-server source directly
-    code-server-src = {
-      url = "github:coder/code-server";
-      flake = false;
-    };
-
     # Useful for flake utilities
     flake-utils.url = "github:numtide/flake-utils";
   };
 
   # Add inputs to the function parameters
-  outputs = { self, nixpkgs, home-manager, code-server-src, flake-utils, ... }@inputs: 
+  outputs = { self, nixpkgs, home-manager, flake-utils, ... }@inputs: 
     let 
       # Your system architecture - make sure this is correct
       system = "aarch64-linux";
@@ -41,23 +35,11 @@
       
       # Define pkgs for your system using the configured nixpkgs
       pkgs = pkgsForSystem system;
-      
-      # Build the code-server package using the module
-      code-server-pkg = import ./packages/code-server {
-        inherit pkgs code-server-src;
-      };
     in
     {
       # NixOS configuration
       nixosConfigurations.carnac = nixpkgs.lib.nixosSystem {
         inherit system;
-        
-        # Pass special arguments to modules
-        specialArgs = { 
-          inherit code-server-pkg;
-          # Pass the configured pkgs to ensure allowUnfree is set
-          pkgs = pkgs;
-        };
         
         modules = [
           # Set allowUnfree globally in the NixOS configuration
@@ -68,29 +50,15 @@
           ./services/duckdns.nix
           ./services/tailscale.nix
           ./services/docker.nix
-          # ./services/code-server.nix # Moved to home
 
           # Add Home Manager as a NixOS module
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            # Set allowUnfree for home-manager
-            home-manager.extraSpecialArgs = { 
-              inherit code-server-pkg;
-              pkgs = pkgs;
-            };
             home-manager.users.christopher = import ./home-manager/home.nix;
           }
         ];
       };
-      
-      # Add devShells using flake-utils
-      #devShells = flake-utils.lib.eachDefaultSystem (system: {
-      #  default = import ./devshells/default.nix { 
-      #    # Use the configured pkgs for devshells as well
-      #    pkgs = pkgsForSystem system; 
-      #  };
-      #});
     };
 }
