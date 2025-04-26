@@ -49,7 +49,7 @@ docker run -d \
 
 All Dockerfiles include:
 
-- Python 3 with key development packages
+- Python 3 with essential tools (ruff for linting/formatting, aider-chat)
 - Go programming language (ARM64 build)
 - Git with enhanced configuration (delta for diffs)
 - Shell tools (fish, tmux, starship)
@@ -78,6 +78,8 @@ The advanced optimized version includes a script to install optional tools when 
 ```
 
 This allows you to keep the base image small while still having access to additional tools when required.
+
+Additionally, Python development tools like mypy and ipython are not pre-installed, as they can be installed on a per-project basis using uv or pip when needed.
 
 ## Customization
 

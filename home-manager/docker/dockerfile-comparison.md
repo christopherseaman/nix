@@ -17,7 +17,7 @@
 
 3. **Consolidated apt Operations**: Combined apt-get commands and added cleanup in the same layer to prevent caching of package lists and temporary files.
 
-4. **Minimal Python Installation**: Used Python's built-in venv instead of separate virtualenv package, and installed only the specific Python packages needed.
+4. **Minimal Python Installation**: Used Python's built-in venv instead of separate virtualenv package, and installed only essential Python packages (ruff for linting/formatting and aider-chat). Other packages like mypy and ipython can be installed on a per-project basis.
 
 5. **Optimized Layer Ordering**: Placed infrequently changing operations earlier in the Dockerfile to improve build caching.
 
@@ -30,6 +30,7 @@
 3. **Selective Tool Installation**: Review if all tools are necessary. For example:
    - Do you need both fish and bash configurations?
    - Could you use a lighter alternative to Neovim if you don't need all its features?
+   - Use ruff instead of multiple Python tools (black, flake8, etc.) since it can handle both linting and formatting
 
 4. **Compressed Binaries**: For larger tools, consider using tools like UPX to compress binaries further.
 

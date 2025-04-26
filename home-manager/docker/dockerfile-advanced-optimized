@@ -82,12 +82,8 @@ RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes --bin-dir=/config/.
 RUN curl -sSf https://astral.sh/uv/install.sh | sh
 
 # Install Python packages
-RUN pip install --no-cache-dir \
-    black \
-    mypy \
-    ipython \
-    ruff \
-    aider-chat
+RUN uv tool install ruff && \
+    uv pip install aider-chat
 
 # Configure Git
 RUN git config --global user.name "Christopher Seaman" && \
