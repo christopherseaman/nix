@@ -1,6 +1,6 @@
 # Optimized Code-Server Dockerfiles
 
-This directory contains multiple Dockerfile options for creating a code-server environment with development tools. Each option offers different trade-offs between convenience, image size, and flexibility.
+This directory contains multiple Dockerfile options for creating a code-server environment with development tools on ARM64 architecture. Each option offers different trade-offs between convenience, image size, and flexibility.
 
 ## Available Options
 
@@ -50,10 +50,10 @@ docker run -d \
 All Dockerfiles include:
 
 - Python 3 with key development packages
-- Go programming language
+- Go programming language (ARM64 build)
 - Git with enhanced configuration (delta for diffs)
 - Shell tools (fish, tmux, starship)
-- Development tools (neovim, ripgrep, bat)
+- Development tools (neovim, ripgrep, bat - all ARM64 builds)
 
 ## Differences Between Versions
 
@@ -86,6 +86,7 @@ You can easily customize any of these Dockerfiles:
 - To add more packages, add them to the appropriate installation commands
 - To remove packages, delete the corresponding installation lines
 - To change versions, update the version numbers in the download URLs
+- To use on x86_64 architecture, replace "arm64" with "amd64" in binary URLs and filenames
 
 ## Size Comparison
 

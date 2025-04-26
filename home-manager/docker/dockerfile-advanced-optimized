@@ -14,15 +14,15 @@ RUN apt-get update && \
 # Set up Go in a separate stage to reduce layers
 FROM base AS go-builder
 USER root
-RUN curl -sSL https://golang.org/dl/go1.21.0.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+RUN curl -sSL https://go.dev/dl/go1.24.2.linux-arm64.tar.gz | tar -C /usr/local -xzf -
 
 # Set up Neovim in a separate stage
 FROM base AS nvim-builder
 USER root
 RUN curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-arm64.tar.gz && \
     mkdir -p /opt/nvim && \
-    tar -C /opt -xzf nvim-linux64.tar.gz && \
-    rm nvim-linux64.tar.gz
+    tar -C /opt -xzf nvim-linux-arm64.tar.gz && \
+    rm nvim-linux-arm64.tar.gz
 
 # Set up binary tools in a separate stage
 FROM base AS tool-builder
@@ -30,16 +30,16 @@ USER root
 WORKDIR /tmp/tools
 
 # Download binary tools
-RUN curl -LO https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep_13.0.0_amd64.deb && \
-    curl -LO https://github.com/sharkdp/bat/releases/download/v0.23.0/bat_0.23.0_amd64.deb && \
-    curl -LO https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_amd64.deb
+RUN curl -LO https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep_14.1.1_arm64.deb && \
+    curl -LO https://github.com/sharkdp/bat/releases/download/v0.25.0/bat_0.25.0_arm64.deb && \
+    curl -LO https://github.com/dandavison/delta/releases/download/0.18.2/git-delta_0.18.2_arm64.deb
 
 # Final stage - combine everything
 FROM base
 
 # Copy from builder stages
 COPY --from=go-builder /usr/local/go /usr/local/go
-COPY --from=nvim-builder /opt/nvim-linux64 /opt/nvim-linux64
+COPY --from=nvim-builder /opt/nvim-linux-arm64 /opt/nvim-linux-arm64
 COPY --from=tool-builder /tmp/tools/*.deb /tmp/
 
 # Install essential packages
@@ -55,7 +55,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     # Create symlinks
-    ln -s /opt/nvim-linux64/bin/nvim /usr/local/bin/nvim
+    ln -s /opt/nvim-linux-arm64/bin/nvim /usr/local/bin/nvim
 
 # Install GitHub CLI
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && \

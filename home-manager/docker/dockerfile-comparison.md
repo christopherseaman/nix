@@ -1,4 +1,4 @@
-# Dockerfile Comparison and Optimization
+# Dockerfile Comparison and Optimization (ARM64)
 
 ## Key Differences
 
@@ -13,7 +13,7 @@
 
 1. **Eliminated Nix Package Manager**: Removed the entire Nix ecosystem which can add 1GB+ to the image size.
 
-2. **Direct Binary Downloads**: For tools like Neovim, ripgrep, bat, and delta, we download pre-compiled binaries instead of building from source or using package managers with large dependency trees.
+2. **Direct Binary Downloads**: For tools like Neovim, ripgrep, bat, and delta, we download pre-compiled ARM64 binaries instead of building from source or using package managers with large dependency trees.
 
 3. **Consolidated apt Operations**: Combined apt-get commands and added cleanup in the same layer to prevent caching of package lists and temporary files.
 
@@ -36,6 +36,8 @@
 5. **Runtime Download Option**: For less frequently used tools, consider adding scripts that download and install them on first use rather than including them in the image.
 
 6. **Docker BuildKit Features**: Use BuildKit's cache mounting to avoid storing temporary build artifacts in the image layers.
+
+7. **Architecture-Specific Binaries**: The Dockerfiles use ARM64-specific binaries for Go, Neovim, ripgrep, bat, and delta. This ensures optimal performance on ARM64 systems like Apple Silicon Macs or ARM-based cloud instances.
 
 ## Size Comparison Estimate
 
