@@ -1,0 +1,177 @@
+FROM lscr.io/linuxserver/code-server:4.99.3 as base
+
+# Install minimal build dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl ca-certificates gnupg wget xz-utils sudo && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /config/workspace /config/.local/bin && \
+    chown -R abc:abc /config && \
+    echo "abc ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/abc && \
+    chmod 0440 /etc/sudoers.d/abc
+
+# Set up Go in a separate stage to reduce layers
+FROM base as go-builder
+USER root
+RUN curl -sSL https://golang.org/dl/go1.21.0.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+
+# Set up Neovim in a separate stage
+FROM base as nvim-builder
+USER root
+RUN curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz && \
+    mkdir -p /opt/nvim && \
+    tar -C /opt -xzf nvim-linux64.tar.gz && \
+    rm nvim-linux64.tar.gz
+
+# Set up binary tools in a separate stage
+FROM base as tool-builder
+USER root
+WORKDIR /tmp/tools
+
+# Download binary tools
+RUN curl -LO https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep_13.0.0_amd64.deb && \
+    curl -LO https://github.com/sharkdp/bat/releases/download/v0.23.0/bat_0.23.0_amd64.deb && \
+    curl -LO https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_amd64.deb
+
+# Final stage - combine everything
+FROM base
+
+# Copy from builder stages
+COPY --from=go-builder /usr/local/go /usr/local/go
+COPY --from=nvim-builder /opt/nvim-linux64 /opt/nvim-linux64
+COPY --from=tool-builder /tmp/tools/*.deb /tmp/
+
+# Install essential packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    python3 python3-pip python3-venv \
+    git fish tmux \
+    build-essential && \
+    # Install .deb packages
+    dpkg -i /tmp/*.deb && \
+    rm /tmp/*.deb && \
+    # Clean up
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    # Create symlinks
+    ln -s /opt/nvim-linux64/bin/nvim /usr/local/bin/nvim
+
+# Install GitHub CLI
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && \
+    chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends gh && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Switch to abc user for remaining installations
+USER abc
+WORKDIR /config
+
+# Install Starship prompt
+RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes --bin-dir=/config/.local/bin
+
+# Install uv (Python package installer)
+RUN curl -sSf https://astral.sh/uv/install.sh | sh
+
+# Install Python packages
+RUN pip install --no-cache-dir \
+    black \
+    mypy \
+    ipython \
+    ruff \
+    aider-chat
+
+# Configure Git
+RUN git config --global user.name "Christopher Seaman" && \
+    git config --global user.email "86775+christopherseaman@users.noreply.github.com" && \
+    git config --global core.editor "nvim" && \
+    git config --global init.defaultBranch main && \
+    git config --global pull.rebase false && \
+    # Configure delta for better git diffs
+    git config --global core.pager "delta" && \
+    git config --global delta.navigate true && \
+    git config --global delta.line-numbers true && \
+    git config --global delta.side-by-side true
+
+# Setup shell configuration
+RUN mkdir -p /config/.config/fish && \
+    echo 'set -x PATH $PATH /config/.local/bin $HOME/.local/bin /usr/local/go/bin $HOME/go/bin' >> /config/.config/fish/config.fish && \
+    echo 'eval "$(starship init fish)"' >> /config/.config/fish/config.fish && \
+    echo 'export PATH=$PATH:/config/.local/bin:$HOME/.local/bin:/usr/local/go/bin:$HOME/go/bin' >> /config/.bashrc && \
+    echo 'eval "$(starship init bash)"' >> /config/.bashrc
+
+# Make sure the path is properly set for code-server
+RUN mkdir -p /config/.config/code-server && \
+    echo '#!/usr/bin/env bash\n\
+export PATH=$PATH:/config/.local/bin:$HOME/.local/bin:/usr/local/go/bin:$HOME/go/bin\n\
+exec /usr/bin/entrypoint.sh "$@"' > /config/entrypoint-wrapper.sh && \
+    chmod +x /config/entrypoint-wrapper.sh
+
+# Switch back to root for final steps
+USER root
+
+# Configure the container to use our wrapper script
+RUN mkdir -p /etc/cont-init.d && \
+cat > /etc/cont-init.d/99-code-server-wrapper <<'EOF'
+#!/bin/bash
+# This script is run when the container starts
+if [[ -f /config/entrypoint-wrapper.sh ]]; then
+  cp /config/entrypoint-wrapper.sh /usr/local/bin/code-server-wrapper
+  chmod +x /usr/local/bin/code-server-wrapper
+  sed -i "s|command=/usr/bin/entrypoint.sh|command=/usr/local/bin/code-server-wrapper|" /etc/services.d/code-server/run
+fi
+exit 0
+EOF
+RUN chmod +x /etc/cont-init.d/99-code-server-wrapper
+
+# Add a script to install optional tools on demand
+RUN mkdir -p /config/scripts && \
+    cat > /config/scripts/install-optional-tools.sh <<'EOF'
+#!/bin/bash
+# Script to install optional tools on demand
+
+function install_docker_compose {
+  echo "Installing docker-compose..."
+  sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  sudo chmod +x /usr/local/bin/docker-compose
+  echo "docker-compose installed!"
+}
+
+function install_tree {
+  echo "Installing tree..."
+  sudo apt-get update && sudo apt-get install -y tree
+  sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/*
+  echo "tree installed!"
+}
+
+# Main menu
+PS3="Select a tool to install (or 0 to exit): "
+options=("docker-compose" "tree" "Exit")
+select opt in "${options[@]}"
+do
+  case $opt in
+    "docker-compose")
+      install_docker_compose
+      ;;
+    "tree")
+      install_tree
+      ;;
+    "Exit")
+      break
+      ;;
+    *) 
+      echo "Invalid option"
+      ;;
+  esac
+done
+EOF
+RUN chmod +x /config/scripts/install-optional-tools.sh && \
+    chown abc:abc /config/scripts/install-optional-tools.sh
+
+# Add a welcome message with instructions
+RUN echo 'echo "Welcome to the optimized code-server environment!"' >> /etc/cont-init.d/99-welcome && \
+    echo 'echo "To install optional tools, run: /config/scripts/install-optional-tools.sh"' >> /etc/cont-init.d/99-welcome && \
+    chmod +x /etc/cont-init.d/99-welcome
