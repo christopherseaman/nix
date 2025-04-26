@@ -1,4 +1,4 @@
-FROM lscr.io/linuxserver/code-server:4.99.3 as base
+FROM lscr.io/linuxserver/code-server:4.99.3 AS base
 
 # Install minimal build dependencies
 RUN apt-get update && \
@@ -12,20 +12,20 @@ RUN apt-get update && \
     chmod 0440 /etc/sudoers.d/abc
 
 # Set up Go in a separate stage to reduce layers
-FROM base as go-builder
+FROM base AS go-builder
 USER root
 RUN curl -sSL https://golang.org/dl/go1.21.0.linux-amd64.tar.gz | tar -C /usr/local -xzf -
 
 # Set up Neovim in a separate stage
-FROM base as nvim-builder
+FROM base AS nvim-builder
 USER root
-RUN curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz && \
+RUN curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-arm64.tar.gz && \
     mkdir -p /opt/nvim && \
     tar -C /opt -xzf nvim-linux64.tar.gz && \
     rm nvim-linux64.tar.gz
 
 # Set up binary tools in a separate stage
-FROM base as tool-builder
+FROM base AS tool-builder
 USER root
 WORKDIR /tmp/tools
 
