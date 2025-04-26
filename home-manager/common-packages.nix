@@ -2,7 +2,7 @@
 
 with pkgs; [
   # Core tools
-  python312Minimal
+  python3Minimal
   go
 #  rustc
 #  cargo
