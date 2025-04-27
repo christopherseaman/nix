@@ -9,7 +9,7 @@
         auto_https disable_redirects
       }
       
-      carnac.badmath.org, codernac.duckdns.org {
+      carnac carnac.tailf0b9.ts.net carnac.badmath.org, codernac.duckdns.org {
         reverse_proxy localhost:8443 {
           header_up Host {host}
 	  header_up X-Real-IP {remote}
