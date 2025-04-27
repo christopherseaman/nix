@@ -10,16 +10,19 @@
 
   systemd.user.services.code-server = {
     Unit = {
-      Description = "code-server (rootless Docker, user service, custom image)";
-      After = [ "docker.service" "docker.socket" ];
+      Description = "code-server (local binary, user service)";
     };
     Service = {
+      # Load environment variables from secrets file
       ExecStartPre = ''
-        ${pkgs.docker}/bin/docker rm -f code-server || true ; ${pkgs.docker}/bin/docker pull sqrlly/code-server:4.99.3
+        ${pkgs.bash}/bin/bash -c 'set -a; source /var/lib/secrets.env; set +a'
       '';
       ExecStart = ''
-      	${pkgs.docker}/bin/docker run --rm --name code-server -p 127.0.0.1:8443:8443 -e PUID=1000 -e PGID=100 -e TZ=${config.home.time.timeZone or "UTC"} -e DEFAULT_WORKSPACE=/config/workspace -e SHELL=${pkgs.fish}/bin/fish --env-file /var/lib/secrets.env -v /home/christopher/.code-server:/config -v /home/christopher/projects:/config/workspace sqrlly/code-server:4.99.3
+        /home/christopher/.local/bin/code-server --bind-addr 127.0.0.1:8443 --user-data-dir /home/christopher/.code-server/data --config /home/christopher/.code-server/config.yaml --extensions-dir /home/christopher/.code-server/extensions /home/christopher/projects
       '';
+      # Ensure environment variables from secrets file are loaded
+      EnvironmentFile = "/var/lib/secrets.env";
+      Environment = "SHELL=${pkgs.fish}/bin/fish";
       Restart = "always";
       RestartSec = 10;
     };
@@ -28,4 +31,3 @@
     };
   };
 }
-
