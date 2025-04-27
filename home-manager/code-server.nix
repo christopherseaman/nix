@@ -22,7 +22,7 @@
       '';
       # Ensure environment variables from secrets file are loaded
       EnvironmentFile = "/var/lib/secrets.env";
-      Environment = "SHELL=${pkgs.fish}/bin/fish";
+      Environment = "SHELL=fish";
       Restart = "always";
       RestartSec = 10;
     };
