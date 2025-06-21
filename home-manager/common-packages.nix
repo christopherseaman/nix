@@ -6,9 +6,10 @@ with pkgs; [
   go
 #  rustc
 #  cargo
-#  nodejs_20
+  nodejs_20
 
   # Dev tools
+  claude-code
   git
 #  git-lfs
   gh
